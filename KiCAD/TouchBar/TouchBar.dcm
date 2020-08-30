@@ -1,0 +1,13 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TouchBar30C-XXXX
+D Capacitive Touch Bar with 3 Sense + 1 Function pad
+K touch, touchbar, slider
+$ENDCMP
+#
+$CMP TouchBar31C-XXXX
+D Capacitive Touch Bar with 3 Sense + 1 Function pad
+K touch, touchbar, slider
+$ENDCMP
+#
+#End Doc Library
