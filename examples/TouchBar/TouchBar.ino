@@ -74,7 +74,7 @@ void setup ()
   TB.SetRampResolution (25, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
   TB.SetTapTimeout (200, true); // It takes: byte NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
   // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
-  TB.SetFlags (false, false, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
+  TB.SetFlags (false, true, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
   //TB.SetFlags (true, false, true); // it takes: boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
   /*
   Note:
