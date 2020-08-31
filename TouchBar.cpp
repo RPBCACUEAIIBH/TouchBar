@@ -105,21 +105,23 @@ void TouchBar::SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM = false)
   }
 }
 
-void TouchBar::SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean SaveToEEPROM)
+void TouchBar::SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM)
 {
   Flags = 0;
   bitWrite(Flags, 6, SpringBackFlag);
   bitWrite(Flags, 5, SnapFlag);
   bitWrite(Flags, 4, RampFlag);
+  bitWrite(Flags, 3, FlipFlag);
   // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
   if (SaveToEEPROM == true)
     EEPROM.update (PSAddress + 8, Flags);
 }
 
-void TouchBar::SetFlags (boolean RollOverFlag, boolean SaveToEEPROM)
+void TouchBar::SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM)
 {
   Flags = 0;
   bitWrite(Flags, 7, RollOverFlag);
+  bitWrite(Flags, 3, FlipFlag);
   // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
   if (SaveToEEPROM == true)
     EEPROM.update (PSAddress + 8, Flags);
@@ -185,6 +187,10 @@ boolean TouchBar::GetRampFlag ()
   return bitRead (Flags, 4);
 }
 
+boolean TouchBar::GetFlipFlag ()
+{
+  return bitRead (Flags, 3);
+}
 
 
 /* Input / Output */
@@ -273,6 +279,13 @@ float TouchBar::GetTargetFloat ()
 
 void TouchBar::Main ()
 {
+  // Swap bits 0 and 2 if necessary
+  if (bitRead (Flags, 3) == true)
+  {
+    boolean X = bitRead(ABCPads, 0);
+    bitWrite(ABCPads, 0, bitRead(ABCPads, 2));
+    bitWrite(ABCPads, 2, X);
+  }
   // Tap detection
   if (ABCPads == 1 || ABCPads == 2 || ABCPads == 4 || ABCPads == 0 && ABCPrevious[0] != 0)
     TapCounter += 1;

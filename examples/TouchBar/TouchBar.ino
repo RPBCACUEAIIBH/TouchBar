@@ -5,13 +5,13 @@ Features
 - It senses quick tap on all 3 pads, so the same pads can be used as "buttons" except you loose the ability to hold them down(If it's held, it expects you to drag your finger on the bar.),
   they can only be tapped as buttons.
 - It can operate with a limited range, or roll over infinitely
-- With limited range, you get built in springback, snap, and ramp features.
+- With limited range, you get built in springback, snap, ramp and flip features.
   - If springback is enabled, it resets to default position when you release the touchbar. It will supress snap feature, but works with ramp also enabled.
   - If snap feature is enabled, tapping the pads will snap the position to minimim / default / maximim positions. This also works fine with the ramp feature.
   - When ramp is enabled, you're adjusting a target position, and the actual position will slowly move to the target position. In this case, you also have an adjustment resolution, and a ramp resolution,
     so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
+  - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
 - Settings requre 12 bits of EEPROM.
-
 
 Hardware and software requirements
 
@@ -22,10 +22,10 @@ Hardware you need:
 - Touch bar hooked up to 0,1 and 2 touch touch inputs of the MPR121 module according to the provided documentation.
 
 Libraries you need:
-- Adafruit_MPR121 (or similar)
-- Wire (required by Adafruit_MPR121)
+- Adafruit_MPR121 (or similar, This is not included, you need to install it separately!)
+- Wire (required by Adafruit_MPR121, Should be included with your IDE)
 - TouchBar (This one...)
-- EEPROM (Required by TouchBar)
+- EEPROM (Required by TouchBar, Should be included with your IDE)
 */
 
 
@@ -73,7 +73,9 @@ void setup ()
   TB.SetRampDelay (10, true); // It takes: byte NewRampDelay, boolean SaveToEEPROM(optional)
   TB.SetRampResolution (25, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
   TB.SetTapTimeout (200, true); // It takes: byte NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
-  TB.SetFlags (false, false, false, true); // It is an overloaded method... It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean SaveToEEPROM(optional); OR it takes: boolean RollOverFlag, boolean SaveToEEPROM(optional)
+  // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
+  TB.SetFlags (false, false, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
+  //TB.SetFlags (true, false, true); // it takes: boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
   /*
   Note:
   - You don't need to save to EEPROM every time. The EEPROM is for preserving settings when it's turned off.
@@ -82,6 +84,8 @@ void setup ()
   - You can either have limited range, and fancy features, or unlimited range, and no fancy features...
   - Snap does nothing when springback is also enabled.
   - TapTimeout may not be obvious, but it is implemented to avoid sensing it as a tap if you rest your finger on the touch bar, but you change your mind and don't wanna ajust it.
+
+  Play with the presets first, and find out what they do.
   */
 
   // Second initialize the Touch Bar library (load presets form EEPROM)
@@ -109,6 +113,8 @@ void setup ()
   Serial.print (TB.GetSnapFlag ());
   Serial.print (F("\n  RampFlag = "));
   Serial.print (TB.GetRampFlag ());
+  Serial.print (F("\n  FlipFlag = "));
+  Serial.print (TB.GetFlipFlag ());
   Serial.println ();
   Serial.println ();
   

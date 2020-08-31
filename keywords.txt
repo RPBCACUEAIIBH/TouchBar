@@ -21,6 +21,7 @@ GetRollOverFlag	KEYWORD2
 GetSpringBackFlag	KEYWORD2
 GetSnapFlag	KEYWORD2
 GetRampFlag	KEYWORD2
+GetFlipFlag	KEYWORD2
 
 ### Operation ###
 Init	KEYWORD2

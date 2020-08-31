@@ -51,8 +51,8 @@ class TouchBar
     void SetResolution (byte NewResolution, boolean SaveToEEPROM = false); // Sets Resolution and optionally saves it to EEPROM
     void SetRampDelay (byte NewRampDelay, boolean SaveToEEPROM = false); // Sets RampDelay and optionally saves it to EEPROM
     void SetRampResolution (byte NewRampResolution, boolean SaveToEEPROM = false); // Sets RampResolution and optionally saves it to EEPROM
-    void SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean SaveToEEPROM = false); // Sets Springback, Snap, and Ramp flags, clears RollOver and optionally saves them to EEPROM
-    void SetFlags (boolean RollOverFlag, boolean SaveToEEPROM = false); // Sets RollOver flag, clears the others and optionally saves them to EEPROM
+    void SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM = false); // Sets Springback, Snap, Ramp and Flip flags, clears RollOver and optionally saves them to EEPROM
+    void SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM = false); // Sets RollOver and Flip flags, clears the others and optionally saves them to EEPROM
     void SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM = false); // This needed for pad event.
     // Methods for Monitoring
     unsigned int GetDefault (); // Returns default value.
@@ -65,6 +65,7 @@ class TouchBar
     boolean GetRollOverFlag (); // Returns RollOver flag status.
     boolean GetSnapFlag (); // Returns Snap flag status.
     boolean GetRampFlag (); // Returns SlowRamp flag status.
+    boolean GetFlipFlag (); // Returns Flip flag status.
     // Operation
     void Init (); // This loads all the defaults from EEPROM. Call it in Setup after initializing the touch library.
     void Update (byte NewValue); // BiTB: 0(LSB) = PadA; 1 = PadB; 2 = PadC; The rest of the bits are ignored.
