@@ -13,7 +13,7 @@ Features:
   - When ramp is enabled, you're adjusting a target position, and the actual position will slowly move to the target position. In this case, you also have an adjustment resolution, and a ramp resolution,
     so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
   - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
-- Settings requre 12 bits of EEPROM.
+- Settings requre 12 byts of EEPROM.
 
 
 Hardware requirements:
