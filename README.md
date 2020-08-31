@@ -24,10 +24,11 @@ Hardware requirements:
 
 Software requirements:
 - Arduino IDE
-- Adafruit_MPR121 (or similar... not included, you need to install it separately!)
-- Wire (required by Adafruit_MPR121, Should be included with your IDE)
-- TouchBar (This one...)
-- EEPROM (Required by TouchBar, Should be included with your IDE)
+- KiCAD
+- Adafruit_MPR121 library (or similar... not included, you need to install it separately!)
+- Wire library (required by Adafruit_MPR121, Should be included with your IDE)
+- TouchBar library (This one...)
+- EEPROM library (Required by TouchBar, Should be included with your IDE)
 
 
 Skill requirements:
