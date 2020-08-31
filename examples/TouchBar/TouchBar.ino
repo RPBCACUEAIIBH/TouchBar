@@ -1,6 +1,8 @@
 /*
 The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of the Adafruit_MPR121 library, or a port register) and interpret it as a touch bar.
-Features
+
+
+Features:
 - It senses directon whether you slide your finger over 1-2 pads(light touch scenario), or 2-3 pads at once (hard touch scenario) so it has some tolerance.
 - It senses quick tap on all 3 pads, so the same pads can be used as "buttons" except you loose the ability to hold them down(If it's held, it expects you to drag your finger on the bar.),
   they can only be tapped as buttons.
@@ -13,19 +15,25 @@ Features
   - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
 - Settings requre 12 bits of EEPROM.
 
-Hardware and software requirements
 
-Hardware you need:
+Hardware requirements:
 - Arduino running at 16MHz (Any type should do. 16MHz is important cause delays are based on cycles of execution not ms / us, 8MHz will work but require different settings. Mine is pro-mini 5V, 16MHz version.)
 - 3.3V regulator if your arduino doesn't have 3.3V power on it, and level shifter. (Ignore this if your arduino somehow runs at 3.3V, 16MHz)
 - MPR 121 touch module hooked up to i2c via the level shifter(cause it's a 3.3V device)
 - Touch bar hooked up to 0,1 and 2 touch touch inputs of the MPR121 module according to the provided documentation.
 
-Libraries you need:
-- Adafruit_MPR121 (or similar, This is not included, you need to install it separately!)
+
+Software requirements:
+- Arduino IDE
+- Adafruit_MPR121 (or similar... not included, you need to install it separately!)
 - Wire (required by Adafruit_MPR121, Should be included with your IDE)
 - TouchBar (This one...)
 - EEPROM (Required by TouchBar, Should be included with your IDE)
+
+
+Skill requirements:
+- You need to have basic arduino skills. (Understanding how to interface 5V and 3.3V modules, hooking up and testing an i2c device with level shifter, soldering, understanding arduino code, installing and using libraries, etc. This is a library of source code and CAD files with an example sketch not a tutorial, so I won't explain everything here.)
+- You either need to make a PCB or order one! (The touch bar itself is basically a footprint you have to print on a PCB, it's a custom design, you can't really buy it.)
 */
 
 
