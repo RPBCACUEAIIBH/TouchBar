@@ -2,7 +2,7 @@
 The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of the Adafruit_MPR121 library, or a port register) and interpret it as a touch bar.
 
 
-Features:
+Features
 - It senses directon whether you slide your finger over 1-2 pads(light touch scenario), or 2-3 pads at once (hard touch scenario) so it has some tolerance.
 - It senses quick tap on all 3 pads, so the same pads can be used as "buttons" except you loose the ability to hold them down(If it's held, it expects you to drag your finger on the bar.),
   they can only be tapped as buttons.
@@ -13,7 +13,7 @@ Features:
   - When ramp is enabled, you're adjusting a target position, and the actual position will slowly move to the target position. In this case, you also have an adjustment resolution, and a ramp resolution,
     so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
   - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
-- Settings requre 12 byts of EEPROM.
+- Settings requre 12 bits of EEPROM.
 
 
 Hardware requirements:
@@ -23,13 +23,11 @@ Hardware requirements:
 - Touch bar hooked up to 0,1 and 2 touch touch inputs of the MPR121 module according to the provided documentation.
 
 
-Software requirements:
-- Arduino IDE
-- KiCAD
-- Adafruit_MPR121 library (or similar... not included, you need to install it separately!)
-- Wire library (required by Adafruit_MPR121, Should be included with your IDE)
-- TouchBar library (This one...)
-- EEPROM library (Required by TouchBar, Should be included with your IDE)
+Libraries requirements:
+- Adafruit_MPR121 (or similar... not included, you need to install it separately!)
+- Wire (required by Adafruit_MPR121, Should be included with your IDE)
+- TouchBar (This one...)
+- EEPROM (Required by TouchBar, Should be included with your IDE)
 
 
 Skill requirements:
@@ -135,7 +133,11 @@ void loop ()
   PreviousTarget = TB.GetTargetInt();
   // Read pads and feed it to Touch Bar lib.
   TB.Update (TouchModule.touched()); // Takes byte but only uses first 3 bits [0-2]
-  // TB.Update (PadA, PadB, PadC); // <<< You can also do something like this giving it 3 boolean values instead of a byte...
+  /*
+  // You can also do something like this giving it 3 boolean values instead of a byte, however it uses 30 bytes more program space... (Don't forget to comment the line above if you uncomment the following 2 lines!)
+  unsigned int X = TouchModule.touched();
+  TB.Update (bitRead(X, 0), bitRead(X, 1), bitRead(X, 2));
+  */
 
   // Get tap.
   if (TB.PadEvent() != 'Z')
