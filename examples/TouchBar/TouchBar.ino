@@ -14,6 +14,9 @@ Features
     so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
   - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
 - Settings requre 12 bits of EEPROM.
+- It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one.
+  (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware
+  fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
 
 
 Hardware requirements:
@@ -80,6 +83,7 @@ void setup ()
   TB.SetRampDelay (10, true); // It takes: byte NewRampDelay, boolean SaveToEEPROM(optional)
   TB.SetRampResolution (25, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
   TB.SetTapTimeout (200, true); // It takes: byte NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
+  TB.SetTSDelay (35, true); // Takes byte TSDealy, boolean SaveToEEPROM(optional); 20-45 works fine with 16MHz arduino. The higher the number the better, however if it's too high it may miss a very fast tap. (Debounces oscillation of the same pad, but immediately passes trough change on any other pad then the previous one to allow for fast swipe. Without this sometimes it may falsely read a tap on a pad when placing or removing your finger on the touch bar.)
   // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
   TB.SetFlags (false, true, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
   //TB.SetFlags (true, false, true); // it takes: boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
@@ -112,6 +116,8 @@ void setup ()
   Serial.print (TB.GetRampResolution ());
   Serial.print (F("\n  TapTimeout = "));
   Serial.print (TB.GetTapTimeout ());
+  Serial.print (F("\n  TSDelay = "));
+  Serial.print (TB.GetTSDelay ());
   Serial.print (F("\n  RollOverFlag = "));
   Serial.print (TB.GetRollOverFlag ());
   Serial.print (F("\n  SpringBackFlag = "));

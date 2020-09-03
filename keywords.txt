@@ -8,6 +8,7 @@ SetResolution	KEYWORD2
 SetRampDelay	KEYWORD2
 SetRampResolution	KEYWORD2
 SetTapTimeout	KEYWORD2
+SetTSDelay	KEYWORD2
 SetFlags	KEYWORD2
 
 ### Methods for Monitoring ###
@@ -17,6 +18,7 @@ GetResolution	KEYWORD2
 GetRampDelay	KEYWORD2
 GetRampResolution	KEYWORD2
 GetTapTimeout	KEYWORD2
+GetTSDelay	KEYWORD2
 GetRollOverFlag	KEYWORD2
 GetSpringBackFlag	KEYWORD2
 GetSnapFlag	KEYWORD2

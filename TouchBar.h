@@ -25,6 +25,7 @@ class TouchBar
     // Ramp - bit 4 --> This allows automatic gradual transition from one position to another. (Limits the rate of change, for fast finger swipe, as well as for springback and snap features. Can be used to automatically ramp up/down motor speed, dimm LEDs, etc.)
     byte ABCPads = 0; // This is the input...
     byte TapTimeout; // This controls how fast is a tap on any one of the 3 pads. The lower the number, the faster you should tap.
+    byte TwitchSuppressionDelay;
     // Internal variables
     unsigned int RampCounter = 0;
     unsigned int Target;
@@ -32,6 +33,8 @@ class TouchBar
     unsigned int TapCounter;
     byte ABCPrevious[3] = {0, 0, 0};
     byte Direction = Static;
+    byte Raw = 0;
+    byte TSCounter = 0;
     
 
     // Private methods
@@ -39,6 +42,7 @@ class TouchBar
     void Main ();
     void GetDirection ();
     void AdjustOutput ();
+    void TwitchSuppression (byte NewValue);
 
   public:
     /* Constructor */
@@ -51,9 +55,11 @@ class TouchBar
     void SetResolution (byte NewResolution, boolean SaveToEEPROM = false); // Sets Resolution and optionally saves it to EEPROM
     void SetRampDelay (byte NewRampDelay, boolean SaveToEEPROM = false); // Sets RampDelay and optionally saves it to EEPROM
     void SetRampResolution (byte NewRampResolution, boolean SaveToEEPROM = false); // Sets RampResolution and optionally saves it to EEPROM
+    void SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM = false); // This needed for pad event.
+    void SetTSDelay (byte TSDelay, boolean SaveToEEPROM = false); // Sets TouchSuppression delay for sort of a debouncing...
     void SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM = false); // Sets Springback, Snap, Ramp and Flip flags, clears RollOver and optionally saves them to EEPROM
     void SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM = false); // Sets RollOver and Flip flags, clears the others and optionally saves them to EEPROM
-    void SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM = false); // This needed for pad event.
+    
     // Methods for Monitoring
     unsigned int GetDefault (); // Returns default value.
     unsigned int GetLimit (); // Returns Limit value.
@@ -61,6 +67,7 @@ class TouchBar
     byte GetRampResolution (); // Returns RampResolution value.
     byte GetResolution (); // Returns Resolution value.
     byte GetTapTimeout (); // Returns TapTimeout value.
+    byte TouchBar::GetTSDelay (); // Returns TwitchSuppression value.
     boolean GetSpringBackFlag (); // Returns SpringBack flag status.
     boolean GetRollOverFlag (); // Returns RollOver flag status.
     boolean GetSnapFlag (); // Returns Snap flag status.

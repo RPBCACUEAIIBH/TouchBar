@@ -13,6 +13,7 @@ Features:
     so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
   - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
 - Settings requre 12 bytes of EEPROM.
+- It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one. (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
 
 
 Hardware requirements:

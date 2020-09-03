@@ -18,9 +18,12 @@ void TouchBar::Init ()
   Limit --> PSAddress + 2 to PSAddress + 3
   Resolution --> PSAddress + 4
   Ramp delay --> PSAddress + 5
-  Tap timeout --> PSAddress + 6
-  Flags --> PSAddress + 7
-  Reserved --> PSAddress + 8 to PSAddress + 11
+  Ramp resolution --> PSAddress + 6
+  Tap timeout --> PSAddress + 7
+  Flags --> PSAddress + 8
+  Twitch suppression delay --> PSAddress + 9
+  
+  (Reserved for updates --> PSAddress + 10 to PSAddress + 11 and Flag bits [0-2])
   */
   Default = EEPROM.read (PSAddress) << 8;
   Default = Default + EEPROM.read (PSAddress + 1);
@@ -34,6 +37,7 @@ void TouchBar::Init ()
   RampResolution = EEPROM.read (PSAddress + 6);
   TapTimeout = EEPROM.read (PSAddress + 7);
   Flags = EEPROM.read (PSAddress + 8);
+  TwitchSuppressionDelay = EEPROM.read (PSAddress + 9);
 }
 
 
@@ -96,12 +100,21 @@ void TouchBar::SetRampResolution (byte NewRampResolution, boolean SaveToEEPROM)
   }
 }
 
-void TouchBar::SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM = false)
+void TouchBar::SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM)
 {
   TapTimeout = NewTapTimeout;
   if (SaveToEEPROM == true)
   {
     EEPROM.update (PSAddress + 7, NewTapTimeout);
+  }
+}
+
+void TouchBar::SetTSDelay (byte TSDelay, boolean SaveToEEPROM)
+{
+  TwitchSuppressionDelay = TSDelay;
+  if (SaveToEEPROM == true)
+  {
+    EEPROM.update (PSAddress + 9, TSDelay);
   }
 }
 
@@ -167,6 +180,11 @@ byte TouchBar::GetTapTimeout ()
   return TapTimeout;
 }
 
+byte TouchBar::GetTSDelay ()
+{
+  return TwitchSuppressionDelay;
+}
+
 boolean TouchBar::GetRollOverFlag ()
 {
   return bitRead (Flags, 7);
@@ -199,8 +217,8 @@ void TouchBar::Update (byte NewValue) // This compiles to 30 bytes less then the
 {
   Shift ();
   
-  //ABCPads = NewValue % 8; // This is more beginner friendly...
-  ABCPads = NewValue & 0x07; // This does the same, compiles to the same size
+  //TwitchSuppression (NewValue % 8); // This is more beginner friendly...
+  TwitchSuppression (NewValue & 0x07);
 
   Main ();
 }
@@ -209,14 +227,17 @@ void TouchBar::Update (boolean A, boolean B, boolean C)
 {
   Shift ();
   
-  //ABCPads = (C << 2) + (B << 1) + A; // This looks better
+  byte X = 0;
+  //X = (C << 2) + (B << 1) + A; // This looks better
   
   // This does the same, but uses 2 bytes less flash... (I tried like 4 ways of doing this, this is the most compact when compiled, that's 2 instructions less to execute each cycle.)
-  ABCPads = C;
-  ABCPads = ABCPads << 1;
-  ABCPads = ABCPads + B;
-  ABCPads = ABCPads << 1;
-  ABCPads = ABCPads + A;
+  X = C;
+  X = X << 1;
+  X = X + B;
+  X = X << 1;
+  X = X + A;
+  
+  TwitchSuppression (X);
   
   Main ();
 }
@@ -229,6 +250,22 @@ void TouchBar::Shift ()
     ABCPrevious[1] = ABCPrevious[0];
     ABCPrevious[0] = ABCPads;
   }
+}
+
+void TouchBar::TwitchSuppression (byte NewValue)
+{
+  if (TSCounter < 255)
+    TSCounter += 1;
+  if (NewValue != Raw)
+    TSCounter = 0;
+  
+  if (NewValue != ABCPads && NewValue != 0 && ABCPads != 0 || NewValue ^ ABCPads && TSCounter == TwitchSuppressionDelay)
+  {
+    Serial.println (NewValue ^ ABCPads, BIN);
+    ABCPads = NewValue; // This does the same, compiles to the same size
+  }
+
+  Raw = NewValue;
 }
 
 boolean TouchBar::Event ()
@@ -292,6 +329,7 @@ void TouchBar::Main ()
     bitWrite(ABCPads, 0, bitRead(ABCPads, 2));
     bitWrite(ABCPads, 2, X);
   }
+  
   // Tap detection
   if (ABCPads == 1 || ABCPads == 2 || ABCPads == 4 || ABCPads == 0 && ABCPrevious[0] != 0)
     TapCounter += 1;
