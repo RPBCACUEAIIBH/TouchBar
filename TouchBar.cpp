@@ -672,36 +672,29 @@ void TouchBar::AdjustOutput ()
 {
   if (bitRead (Flags, 4) == true)
   {
-    if (Direction == Increment)
+    if (Direction > Static)
     {
-      if (Target < Limit - Resolution)
+      if (Target < Limit - Resolution && Direction == Increment)
         Target += Resolution;
       else
-        Target = Limit;
+      {
+        if (Target < Limit - Resolution && Direction == Increment2)
+          Target += Resolution * 2;
+        else
+          Target = Limit;
+      }
     }
-
-    if (Direction == Decrement)
+    if (Direction < Static)
     {
-      if (Target >= Resolution)
+      if (Target >= Resolution && Direction == Decrement)
         Target -= Resolution;
       else
-        Target = 0;
-    }
-    
-    if (Direction == Increment2)
-    {
-      if (Target < Limit - Resolution * 2)
-        Target += Resolution * 2;
-      else
-        Target = Limit;
-    }
-
-    if (Direction == Decrement2)
-    {
-      if (Target >= Resolution * 2)
-        Target -= Resolution * 2;
-      else
-        Target = 0;
+      {
+        if (Target >= Resolution && Direction == Decrement2)
+          Target -= Resolution * 2;
+        else
+          Target = 0;
+      }
     }
 
     if (RampCounter == RampDelay - 1)
@@ -724,68 +717,57 @@ void TouchBar::AdjustOutput ()
   }
   else
   {
-    if (Direction == Increment)
+    if (Direction > Static)
     {
       if (bitRead (Flags, 7) == true)
       {
-        Current += Resolution;
-        if (Current >= Limit)
-          Current = 0;
+        if (Direction == Increment)
+          Current += Resolution;
+        if (Direction == Increment2)
+          Current += Resolution * 2;
+        Current %= Limit;
       }
       else
       {
-        if (Current < Limit - Resolution)
+        if (Current < Limit - Resolution && Direction == Increment)
           Current += Resolution;
         else
-          Current = Limit;
+        {
+          if (Current < Limit - Resolution && Direction == Increment2)
+            Current += Resolution * 2;
+          else
+            Current = Limit;
+        }
       }
     }
-    if (Direction == Decrement)
+    if (Direction < Static)
     {
       if (bitRead (Flags, 7) == true)
       {
-        Current -= Resolution;
-        if (Current >= Limit)
-          Current = Limit - Resolution;
+        byte X = 0;
+        if (Direction == Decrement)
+          X = Resolution;
+        if (Direction == Decrement2)
+          X = Resolution * 2;
+        if (Current - X >= Limit)
+        {
+          X -= Current;
+          Current = Limit - X;
+        }
+        else
+          Current -= X;
       }
       else
       {
-        if (Current >= Resolution)
+        if (Current >= Resolution && Direction == Decrement)
           Current -= Resolution;
         else
-          Current = 0;
-      }
-    }
-    if (Direction == Increment2)
-    {
-      if (bitRead (Flags, 7) == true)
-      {
-        Current += Resolution * 2;
-        if (Current >= Limit)
-          Current = 0;
-      }
-      else
-      {
-        if (Current < Limit - Resolution * 2)
-          Current += Resolution * 2;
-        else
-          Current = Limit;
-      }
-    }
-    if (Direction == Decrement2)
-    {
-      if (bitRead (Flags, 7) == true)
-      {
-        Current -= Resolution * 2;
-        if (Current >= Limit)
-          Current = Limit - Resolution * 2;
-      }
-      else
-      {
-        if (Current >= Resolution * 2)
-          Current -= Resolution * 2;
-        else
-          Current = 0;
+        {
+          if (Current >= Resolution && Direction == Decrement2)
+            Current -= Resolution * 2;
+          else
+            Current = 0;
+        }
       }
     }
   }
