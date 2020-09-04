@@ -3,9 +3,11 @@
 
 #include <Arduino.h>
 
+#define Decrement2 0
+#define Decrement 63
 #define Static 127
-#define Increment 255
-#define Decrement 0
+#define Increment 192
+#define Increment2 255
 
 class TouchBar
 {

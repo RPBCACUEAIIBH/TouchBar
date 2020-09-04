@@ -260,10 +260,7 @@ void TouchBar::TwitchSuppression (byte NewValue)
     TSCounter = 0;
   
   if (NewValue != ABCPads && NewValue != 0 && ABCPads != 0 || NewValue ^ ABCPads && TSCounter == TwitchSuppressionDelay)
-  {
-    Serial.println (NewValue ^ ABCPads, BIN);
     ABCPads = NewValue; // This does the same, compiles to the same size
-  }
 
   Raw = NewValue;
 }
@@ -478,6 +475,107 @@ void TouchBar::GetDirection ()
     
     // The following does the same as the commented section above, except it compiles to 76-94 bytes less (depending on which Update method is used.).
     // Light touch scenario (only touching 1-2 pads at a time.)
+    // Increment case 1/6
+    if (ABCPads == 3)
+    {
+      if (ABCPrevious[0] == 1) // Normal (A=H, B=T, C=LU)
+        Direction = Increment;
+      if (ABCPrevious[0] == 5) // Skiping (A=H, B=T, C=R)
+        Direction = Increment2;
+    }
+    // Increment case 2/6
+    if (ABCPads == 2)
+    {
+      if (ABCPrevious[0] == 3) // Normal (A=R, B=H, C=LU)
+        Direction = Increment;
+      if (ABCPrevious[0] == 1) // Skiping (A=R, B=T, C=LU)
+        Direction = Increment2;
+    }
+    // Increment case 3/6
+    if (ABCPads == 6)
+    {
+      if (ABCPrevious[0] == 2) // Normal (A=LU, B=H, C=T)
+        Direction = Increment;
+      if (ABCPrevious[0] == 3) // Skiping (A=R, B=H, C=T)
+        Direction = Increment2;
+    }
+    // Increment case 4/6
+    if (ABCPads == 4)
+    {
+      if (ABCPrevious[0] == 6) // Normal (A=LU, B=R, C=H)
+        Direction = Increment;
+      if (ABCPrevious[0] == 2) // Skiping (A=LU, B=R, C=T)
+        Direction = Increment2;
+    }
+    // Increment case 5/6
+    if (ABCPads == 5)
+    {
+      if (ABCPrevious[0] == 4) // Normal (A=T, B=LU, C=H)
+        Direction = Increment;
+      if (ABCPrevious[0] == 6) // Skiping (A=T, B=R, C=H)
+        Direction = Increment2;
+    }
+    // Increment case 6/6
+    if (ABCPads == 1)
+    {
+      if (ABCPrevious[0] == 5) // Normal (A=H, B=LU, C=R)
+        Direction = Increment;
+      if (ABCPrevious[0] == 4) // Skiping (A=T, B=LU, C=R)
+        Direction = Increment2;
+    }
+
+    // Decrement case 1/6
+    if (ABCPads == 5)
+    {
+      if (ABCPrevious[0] == 1) // Normal (A=H, B=LU, C=T)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 3) // Skiping (A=H, B=R, C=T)
+        Direction = Decrement2;
+    }
+    // Decrement case 2/6
+    if (ABCPads == 4)
+    {
+      if (ABCPrevious[0] == 5) // Normal (A=R, B=LU, C=H)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 1) // Skiping (A=R, B=LU, C=T)
+        Direction = Decrement2;
+    }
+    // Decrement case 3/6
+    if (ABCPads == 6)
+    {
+      if (ABCPrevious[0] == 4) // Normal (A=LU, B=T, C=H)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 5) // Skiping (A=R, B=T, C=H)
+        Direction = Decrement2;
+    }
+    // Decrement case 4/6
+    if (ABCPads == 2)
+    {
+      if (ABCPrevious[0] == 6) // Normal (A=LU, B=H, C=R)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 4) // Skiping (A=LU, B=T, C=R)
+        Direction = Decrement2;
+    }
+    // Decrement case 5/6
+    if (ABCPads == 3)
+    {
+      if (ABCPrevious[0] == 2) // Normal (A=T, B=H, C=LU)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 6) // Skiping (A=T, B=H, C=R)
+        Direction = Decrement2;
+    }
+    // Decrement case 6/6
+    if (ABCPads == 1)
+    {
+      if (ABCPrevious[0] == 3) // Normal (A=H, B=R, C=LU)
+        Direction = Decrement;
+      if (ABCPrevious[0] == 2) // Skiping (A=T, B=R, C=LU)
+        Direction = Decrement2;
+    }
+    
+    /*
+    // The following does the same as the commented section above, except it compiles to 76-94 bytes less (depending on which Update method is used.).
+    // Light touch scenario (only touching 1-2 pads at a time.)
     // Increment case 1/6 (A=H, B=T, C=LU)
     if (!(ABCPads ^ 3 | ABCPrevious[0] ^ 1))
       Direction = Increment;
@@ -515,6 +613,7 @@ void TouchBar::GetDirection ()
     // Decrement case 6/6 (A=H, B=R, C=LU)
     if (!(ABCPads ^ 1 | ABCPrevious[0] ^ 3))
       Direction = Decrement;
+    */
     
     // Hard touch scenario (touching 2-3 pads at a time.) Rrequires checking the 2nd and 3rd previous status(which together shows second previous event) to determine the direction.
     // Previous event won't do cause the cases for forward and backward are all the same, only determined by the the previously active pad, and each pat is first released and then touched again while the other 2 are held, so we need to go back 1 event further with the checks.
@@ -588,6 +687,22 @@ void TouchBar::AdjustOutput ()
       else
         Target = 0;
     }
+    
+    if (Direction == Increment2)
+    {
+      if (Target < Limit - Resolution * 2)
+        Target += Resolution * 2;
+      else
+        Target = Limit;
+    }
+
+    if (Direction == Decrement2)
+    {
+      if (Target >= Resolution * 2)
+        Target -= Resolution * 2;
+      else
+        Target = 0;
+    }
 
     if (RampCounter == RampDelay - 1)
     {
@@ -637,6 +752,38 @@ void TouchBar::AdjustOutput ()
       {
         if (Current >= Resolution)
           Current -= Resolution;
+        else
+          Current = 0;
+      }
+    }
+    if (Direction == Increment2)
+    {
+      if (bitRead (Flags, 7) == true)
+      {
+        Current += Resolution * 2;
+        if (Current >= Limit)
+          Current = 0;
+      }
+      else
+      {
+        if (Current < Limit - Resolution * 2)
+          Current += Resolution * 2;
+        else
+          Current = Limit;
+      }
+    }
+    if (Direction == Decrement2)
+    {
+      if (bitRead (Flags, 7) == true)
+      {
+        Current -= Resolution * 2;
+        if (Current >= Limit)
+          Current = Limit - Resolution * 2;
+      }
+      else
+      {
+        if (Current >= Resolution * 2)
+          Current -= Resolution * 2;
         else
           Current = 0;
       }
