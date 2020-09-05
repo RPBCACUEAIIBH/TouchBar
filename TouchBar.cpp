@@ -380,101 +380,9 @@ void TouchBar::GetDirection ()
     */
     Direction = Static;
     
-    /*
-    // This is the old way, it works fine, except the new one is more compact when compiled... This one may be easier to understand for beginners.
-    // Light touch scenario (only touching 1-2 pads at a time.)
-    // Increment case 1/6 (A=H, B=T, C=LU)
-    if (ABCPads == 3 && ABCPrevious[0] == 1)
-      Direction = Increment;
-    // Increment case 2/6 (A=R, B=H, C=LU)
-    if (ABCPads == 2 && ABCPrevious[0] == 3)
-      Direction = Increment;
-    // Increment case 3/6 (A=LU, B=H, C=T)
-    if (ABCPads == 6 && ABCPrevious[0] == 2)
-      Direction = Increment;
-    // Increment case 4/6 (A=LU, B=R, C=H)
-    if (ABCPads == 4 && ABCPrevious[0] == 6)
-      Direction = Increment;
-    // Increment case 5/6 (A=T, B=LU, C=H)
-    if (ABCPads == 5 && ABCPrevious[0] == 4)
-      Direction = Increment;
-    // Increment case 6/6 (A=H, B=LU, C=R)
-    if (ABCPads == 1 && ABCPrevious[0] == 5)
-      Direction = Increment;
-    
-    // Decrement case 1/6 (A=H, B=LU, C=T)
-    if (ABCPads == 5 && ABCPrevious[0] == 1)
-      Direction = Decrement;
-    // Decrement case 2/6 (A=R, B=LU, C=H)
-    if (ABCPads == 4 && ABCPrevious[0] == 5)
-      Direction = Decrement;
-    // Decrement case 3/6 (A=LU, B=T, C=H)
-    if (ABCPads == 6 && ABCPrevious[0] == 4)
-      Direction = Decrement;
-    // Decrement case 4/6 (A=LU, B=H, C=R)
-    if (ABCPads == 2 && ABCPrevious[0] == 6)
-      Direction = Decrement;
-    // Decrement case 5/6 (A=T, B=H, C=LU)
-    if (ABCPads == 3 && ABCPrevious[0] == 2)
-      Direction = Decrement;
-    // Decrement case 6/6 (A=H, B=R, C=LU)
-    if (ABCPads == 1 && ABCPrevious[0] == 3)
-      Direction = Decrement;
-      
-    // Hard touch scenario (touching 2-3 pads at a time.) Rrequires checking the 2nd and 3rd previous status(which together shows second previous event) to determine the direction.
-    // Previous event won't do cause the cases for forward and backward are all the same, only determined by the the previously active pad, and each pat is first released and then touched again while the other 2 are held, so we need to go back 1 event further with the checks.
-    // Case 1/6 (A=H, B=H, C=T)
-    if (ABCPads == 7 && ABCPrevious[0] == 3)
-    {
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 5 || ABCPrevious[1] == 1 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 6 || ABCPrevious[1] == 2 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    // Case 2/6 (A=R, B=H, C=H)
-    if (ABCPads == 6 && ABCPrevious[0] == 7)
-    {
-      if (ABCPrevious[1] == 3 && ABCPrevious[2] == 7 || ABCPrevious[1] == 3 && ABCPrevious[2] == 1) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 5 && ABCPrevious[2] == 7 || ABCPrevious[1] == 5 && ABCPrevious[2] == 1) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    // Case 3/6 (A=T, B=H, C=H)
-    if (ABCPads == 7 && ABCPrevious[0] == 6)
-    {
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 3 || ABCPrevious[1] == 2 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 5 || ABCPrevious[1] == 4 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    // Case 4/6 (A=H, B=R, C=H)
-    if (ABCPads == 5 && ABCPrevious[0] == 7)
-    {
-      if (ABCPrevious[1] == 6 && ABCPrevious[2] == 7 || ABCPrevious[1] == 6 && ABCPrevious[2] == 2) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 3 && ABCPrevious[2] == 7 || ABCPrevious[1] == 3 && ABCPrevious[2] == 2) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    // Case 5/6 (A=H, B=T, C=H)
-    if (ABCPads == 7 && ABCPrevious[0] == 5)
-    {
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 6 || ABCPrevious[1] == 4 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 3 || ABCPrevious[1] == 1 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    // Case 6/6 (A=H, B=H, C=R)
-    if (ABCPads == 3 && ABCPrevious[0] == 7)
-    {
-      if (ABCPrevious[1] == 5 && ABCPrevious[2] == 7 || ABCPrevious[1] == 5 && ABCPrevious[2] == 4) // Increment (2nd previous event B=T || B=LU)
-        Direction = Increment;
-      if (ABCPrevious[1] == 6 && ABCPrevious[2] == 7 || ABCPrevious[1] == 6 && ABCPrevious[2] == 4) // Decrement (2nd previous event A=T || A=LU)
-        Direction = Decrement;
-    }
-    */
-    
     // The following does the same as the commented section above, except it compiles to 76-94 bytes less (depending on which Update method is used.).
     // Light touch scenario (only touching 1-2 pads at a time.)
+    // Update: The condition for skipping a state change was added as an afterthought, which sped up the input significantly, but it can't be optimized the way it was before.
     // Increment case 1/6
     if (ABCPads == 3)
     {
@@ -574,45 +482,61 @@ void TouchBar::GetDirection ()
     }
     
     /*
-    // The following does the same as the commented section above, except it compiles to 76-94 bytes less (depending on which Update method is used.).
-    // Light touch scenario (only touching 1-2 pads at a time.)
-    // Increment case 1/6 (A=H, B=T, C=LU)
-    if (!(ABCPads ^ 3 | ABCPrevious[0] ^ 1))
-      Direction = Increment;
-    // Increment case 2/6 (A=R, B=H, C=LU)
-    if (!(ABCPads ^ 2 | ABCPrevious[0] ^ 3))
-      Direction = Increment;
-    // Increment case 3/6 (A=LU, B=H, C=T)
-    if (!(ABCPads ^ 6 | ABCPrevious[0] ^ 2))
-      Direction = Increment;
-    // Increment case 4/6 (A=LU, B=R, C=H)
-    if (!(ABCPads ^ 4 | ABCPrevious[0] ^ 6))
-      Direction = Increment;
-    // Increment case 5/6 (A=T, B=LU, C=H)
-    if (!(ABCPads ^ 5 | ABCPrevious[0] ^ 4))
-      Direction = Increment;
-    // Increment case 6/6 (A=H, B=LU, C=R)
-    if (!(ABCPads ^ 1 | ABCPrevious[0] ^ 5))
-      Direction = Increment;
+    // Update: The condition for skipping can only be implemented for light touch, as the twitch suppression would filter out fast change on the same pin anyway, so it would not make sense.
+    // (It is hard to drag your finger so fast that if would skipp state change when you're pushing it hard on the surface, so it has very limited usefulness anyway.)
     
-    // Decrement case 1/6 (A=H, B=LU, C=T)
-    if (!(ABCPads ^ 5 | ABCPrevious[0] ^ 1))
-      Direction = Decrement;
-    // Decrement case 2/6 (A=R, B=LU, C=H)
-    if (!(ABCPads ^ 4 | ABCPrevious[0] ^ 5))
-      Direction = Decrement;
-    // Decrement case 3/6 (A=LU, B=T, C=H)
-    if (!(ABCPads ^ 6 | ABCPrevious[0] ^ 4))
-      Direction = Decrement;
-    // Decrement case 4/6 (A=LU, B=H, C=R)
-    if (!(ABCPads ^ 2 | ABCPrevious[0] ^ 6))
-      Direction = Decrement;
-    // Decrement case 5/6 (A=T, B=H, C=LU)
-    if (!(ABCPads ^ 3 | ABCPrevious[0] ^ 2))
-      Direction = Decrement;
-    // Decrement case 6/6 (A=H, B=R, C=LU)
-    if (!(ABCPads ^ 1 | ABCPrevious[0] ^ 3))
-      Direction = Decrement;
+    // This commented section works as the next optimized section, however it's kept cause it may be more understandable for beginners. ...and me. :P I don't wanna stare at it and wonder how the hack did I do it in some time... ;)
+    
+    // Hard touch scenario (touching 2-3 pads at a time.) Rrequires checking the 2nd and 3rd previous status(which together shows second previous event) to determine the direction.
+    // Previous event won't do cause the cases for forward and backward are all the same, only determined by the the previously active pad, and each pat is first released and then touched again while the other 2 are held, so we need to go back 1 event further with the checks.
+    // Case 1/6 (A=H, B=H, C=T)
+    if (ABCPads == 7 && ABCPrevious[0] == 3)
+    {
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 5 || ABCPrevious[1] == 1 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 6 || ABCPrevious[1] == 2 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
+    // Case 2/6 (A=R, B=H, C=H)
+    if (ABCPads == 6 && ABCPrevious[0] == 7)
+    {
+      if (ABCPrevious[1] == 3 && ABCPrevious[2] == 7 || ABCPrevious[1] == 3 && ABCPrevious[2] == 1) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 5 && ABCPrevious[2] == 7 || ABCPrevious[1] == 5 && ABCPrevious[2] == 1) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
+    // Case 3/6 (A=T, B=H, C=H)
+    if (ABCPads == 7 && ABCPrevious[0] == 6)
+    {
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 3 || ABCPrevious[1] == 2 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 5 || ABCPrevious[1] == 4 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
+    // Case 4/6 (A=H, B=R, C=H)
+    if (ABCPads == 5 && ABCPrevious[0] == 7)
+    {
+      if (ABCPrevious[1] == 6 && ABCPrevious[2] == 7 || ABCPrevious[1] == 6 && ABCPrevious[2] == 2) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 3 && ABCPrevious[2] == 7 || ABCPrevious[1] == 3 && ABCPrevious[2] == 2) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
+    // Case 5/6 (A=H, B=T, C=H)
+    if (ABCPads == 7 && ABCPrevious[0] == 5)
+    {
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 6 || ABCPrevious[1] == 4 && ABCPrevious[2] == 0) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 7 && ABCPrevious[2] == 3 || ABCPrevious[1] == 1 && ABCPrevious[2] == 0) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
+    // Case 6/6 (A=H, B=H, C=R)
+    if (ABCPads == 3 && ABCPrevious[0] == 7)
+    {
+      if (ABCPrevious[1] == 5 && ABCPrevious[2] == 7 || ABCPrevious[1] == 5 && ABCPrevious[2] == 4) // Increment (2nd previous event B=T || B=LU)
+        Direction = Increment;
+      if (ABCPrevious[1] == 6 && ABCPrevious[2] == 7 || ABCPrevious[1] == 6 && ABCPrevious[2] == 4) // Decrement (2nd previous event A=T || A=LU)
+        Direction = Decrement;
+    }
     */
     
     // Hard touch scenario (touching 2-3 pads at a time.) Rrequires checking the 2nd and 3rd previous status(which together shows second previous event) to determine the direction.
@@ -733,7 +657,7 @@ void TouchBar::AdjustOutput ()
           Current += Resolution;
         else
         {
-          if (Current < Limit - Resolution && Direction == Increment2)
+          if (Current < Limit - Resolution * 2 && Direction == Increment2)
             Current += Resolution * 2;
           else
             Current = Limit;
@@ -763,7 +687,7 @@ void TouchBar::AdjustOutput ()
           Current -= Resolution;
         else
         {
-          if (Current >= Resolution && Direction == Decrement2)
+          if (Current >= Resolution * 2 && Direction == Decrement2)
             Current -= Resolution * 2;
           else
             Current = 0;
