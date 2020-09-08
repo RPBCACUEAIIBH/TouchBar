@@ -1,22 +1,5 @@
 /*
-The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of the Adafruit_MPR121 library, or a port register) and interpret it as a touch bar.
-
-
-Features
-- It senses directon whether you slide your finger over 1-2 pads(light touch scenario), or 2-3 pads at once (hard touch scenario) so it has some tolerance.
-- It senses quick tap on all 3 pads, so the same pads can be used as "buttons" except you loose the ability to hold them down(If it's held, it expects you to drag your finger on the bar.),
-  they can only be tapped as buttons.
-- It can operate with a limited range, or roll over infinitely
-- With limited range, you get built in springback, snap, ramp and flip features.
-  - If springback is enabled, it resets to default position when you release the touchbar. It will supress snap feature, but works with ramp also enabled.
-  - If snap feature is enabled, tapping the pads will snap the position to minimim / default / maximim positions. This also works fine with the ramp feature.
-  - When ramp is enabled, you're adjusting a target position, and the actual position will slowly move to the target position. In this case, you also have an adjustment resolution, and a ramp resolution,
-    so you can make coarese adjustment on the touch bar, but the automatic adjustment will have a fine steps at and even speed.
-  - Flip feature just flips pads A and C (Reverses scroll direction, and swaps Top and Bottom snap pads as well, just like you would orient it upside down.)
-- Settings requre 12 bits of EEPROM.
-- It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one.
-  (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware
-  fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
+The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of my TouchLib library or the Adafruit_MPR121 library.) and interpret it as a touch bar.
 
 
 Hardware requirements:
@@ -36,17 +19,13 @@ Libraries requirements:
 Skill requirements:
 - You need to have basic arduino skills. (Understanding how to interface 5V and 3.3V modules, hooking up and testing an i2c device with level shifter, soldering, understanding arduino code, installing and using libraries, etc. This is a library of source code and CAD files with an example sketch not a tutorial, so I won't explain everything here.)
 - You either need to make a PCB or order one! (The touch bar itself is basically a footprint you have to print on a PCB, it's a custom design, you can't really buy it.)
+
+
+If you find this useful, please consider donationg: http://osrc.rip/Support.html
 */
 
-
-// MPR121 library and it's dependencies
 #include <Adafruit_MPR121.h>
-#include <Wire.h>
-// TouchBar library and it's dependencies
 #include <TouchBar.h>
-#include <EEPROM.h>
-
-
 
 // MPR121 Driver Object
 Adafruit_MPR121 TouchModule = Adafruit_MPR121();
@@ -82,7 +61,7 @@ void setup ()
   TB.SetResolution (100, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
   TB.SetRampDelay (10, true); // It takes: byte NewRampDelay, boolean SaveToEEPROM(optional)
   TB.SetRampResolution (25, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
-  TB.SetTapTimeout (200, true); // It takes: byte NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
+  TB.SetTapTimeout (200, true); // It takes: unsigned int NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
   TB.SetTSDelay (40, true); // Takes byte TSDealy, boolean SaveToEEPROM(optional); 20-45 works fine with 16MHz arduino. The higher the number the better, however if it's too high it may miss a very fast tap. (Debounces oscillation of the same pad, but immediately passes trough change on any other pad then the previous one to allow for fast swipe. Without this sometimes it may falsely read a tap on a pad when placing or removing your finger on the touch bar.)
   // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
   TB.SetFlags (false, true, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)

@@ -15,6 +15,10 @@ Features:
 - Settings requre 12 bytes of EEPROM.
 - It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one. (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
 
+Update v1.1.0:
+- Optimized it for use with my new TouchLib library. (Highly recommend it cause it's more compact, more responsive, and more stable. :D Example sketch included demoing the new features as well.)
+- Added SetTarget() and Restore() methods.
+
 
 Hardware requirements:
 - Arduino running at 16MHz (Any type should do. 16MHz is important cause delays are based on cycles of execution not ms / us, 8MHz will work but require different settings. Mine is pro-mini 5V, 16MHz version.)
@@ -26,10 +30,12 @@ Hardware requirements:
 Software requirements:
 - Arduino IDE
 - KiCAD
-- Adafruit_MPR121 library (or similar... not included, you need to install it separately!)
+- [ToucLib](https://github.com/RPBCACUEAIIBH/TouchLib) (Also my library. This turns arduino pins into touch inputs, only requires a 1M pullup, no need for MPR121 module with this.)
+- or Adafruit_MPR121 library (or similar... not included, you need to install it separately!)
 - Wire library (required by Adafruit_MPR121, Should be included with your IDE)
 - TouchBar library (This one...)
 - EEPROM library (Required by TouchBar, Should be included with your IDE)
+(- Optionally you may also find my [Delinearizer](https://github.com/RPBCACUEAIIBH/Delinearizer) library useful for converting the linear output of the touch bar into logarithmic, inverse logarithmic, or S-curve output to mimic a potmeter. (eg. for use with audio equipment, dimming, or controlling motor speed.)
 
 
 Skill requirements:
@@ -43,3 +49,5 @@ Instructions:
  - Download as .zip package, go to the Sketch/Include Library/Add .ZIP Library... in you Arduino IDE, select it, and click ok.
 2. Open the included example sketch to see how to use it.
 3. It includes a KiCAD library I made with few symbols and several footprints so you can make a proper touch bar on PCB.
+
+[If you find this useful, please consider donationg.](http://osrc.rip/Support.html)

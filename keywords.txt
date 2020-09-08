@@ -27,8 +27,10 @@ GetFlipFlag	KEYWORD2
 
 ### Operation ###
 Init	KEYWORD2
+Restore	KEYWORD2
 Update	KEYWORD2
 SetPosition	KEYWORD2
+SetTarget	KEYWORD2
 Reset	KEYWORD2
 PadEvent	KEYWORD2
 Event	KEYWORD2

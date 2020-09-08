@@ -12,32 +12,10 @@ TouchBar::TouchBar (unsigned int EEPROMAddress)
 
 void TouchBar::Init ()
 {
-  /*
-  EEPROM allocation
-  Default position --> PSAddress to PSAddress + 1
-  Limit --> PSAddress + 2 to PSAddress + 3
-  Resolution --> PSAddress + 4
-  Ramp delay --> PSAddress + 5
-  Ramp resolution --> PSAddress + 6
-  Tap timeout --> PSAddress + 7
-  Flags --> PSAddress + 8
-  Twitch suppression delay --> PSAddress + 9
-  
-  (Reserved for updates --> PSAddress + 10 to PSAddress + 11 and Flag bits [0-2])
-  */
-  Default = EEPROM.read (PSAddress) << 8;
-  Default = Default + EEPROM.read (PSAddress + 1);
+  Restore ();
   Current = Default;
   Previous = Default;
   Target = Default;
-  Limit = EEPROM.read (PSAddress + 2) << 8;
-  Limit = Limit + EEPROM.read (PSAddress + 3);
-  Resolution = EEPROM.read (PSAddress + 4);
-  RampDelay = EEPROM.read (PSAddress + 5);
-  RampResolution = EEPROM.read (PSAddress + 6);
-  TapTimeout = EEPROM.read (PSAddress + 7);
-  Flags = EEPROM.read (PSAddress + 8);
-  TwitchSuppressionDelay = EEPROM.read (PSAddress + 9);
 }
 
 
@@ -100,12 +78,14 @@ void TouchBar::SetRampResolution (byte NewRampResolution, boolean SaveToEEPROM)
   }
 }
 
-void TouchBar::SetTapTimeout (byte NewTapTimeout, boolean SaveToEEPROM)
+void TouchBar::SetTapTimeout (unsigned int NewTapTimeout, boolean SaveToEEPROM)
 {
   TapTimeout = NewTapTimeout;
   if (SaveToEEPROM == true)
   {
-    EEPROM.update (PSAddress + 7, NewTapTimeout);
+    EEPROM.update (PSAddress + 8, NewTapTimeout);
+    EEPROM.update (PSAddress + 7, NewTapTimeout >> 8);
+    //EEPROM.update (PSAddress + 7, NewTapTimeout);
   }
 }
 
@@ -114,7 +94,7 @@ void TouchBar::SetTSDelay (byte TSDelay, boolean SaveToEEPROM)
   TwitchSuppressionDelay = TSDelay;
   if (SaveToEEPROM == true)
   {
-    EEPROM.update (PSAddress + 9, TSDelay);
+    EEPROM.update (PSAddress + 10, TSDelay);
   }
 }
 
@@ -127,7 +107,7 @@ void TouchBar::SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampF
   bitWrite(Flags, 3, FlipFlag);
   // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
   if (SaveToEEPROM == true)
-    EEPROM.update (PSAddress + 8, Flags);
+    EEPROM.update (PSAddress + 9, Flags);
 }
 
 void TouchBar::SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM)
@@ -137,7 +117,7 @@ void TouchBar::SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToE
   bitWrite(Flags, 3, FlipFlag);
   // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
   if (SaveToEEPROM == true)
-    EEPROM.update (PSAddress + 8, Flags);
+    EEPROM.update (PSAddress + 9, Flags);
 }
 
 void TouchBar::SetPosition (unsigned int NewPosition)
@@ -145,7 +125,10 @@ void TouchBar::SetPosition (unsigned int NewPosition)
   Current = NewPosition;
 }
 
-
+void TouchBar::SetTarget (unsigned int NewTarget)
+{
+  Target = NewTarget;
+}
 
 
 
@@ -175,7 +158,7 @@ byte TouchBar::GetRampResolution ()
   return RampResolution;
 }
 
-byte TouchBar::GetTapTimeout ()
+unsigned int TouchBar::GetTapTimeout ()
 {
   return TapTimeout;
 }
@@ -695,4 +678,32 @@ void TouchBar::AdjustOutput ()
       }
     }
   }
+}
+
+void TouchBar::Restore ()
+{
+  /*
+  EEPROM allocation
+  Default position --> PSAddress to PSAddress + 1
+  Limit --> PSAddress + 2 to PSAddress + 3
+  Resolution --> PSAddress + 4
+  Ramp delay --> PSAddress + 5
+  Ramp resolution --> PSAddress + 6
+  Tap timeout --> PSAddress + 7 to PSAddress + 8
+  Flags --> PSAddress + 9
+  Twitch suppression delay --> PSAddress + 10
+  
+  (Reserved for updates --> PSAddress + 11 and Flag bits [0-2])
+  */
+  Default = EEPROM.read (PSAddress) << 8;
+  Default = Default + EEPROM.read (PSAddress + 1);
+  Limit = EEPROM.read (PSAddress + 2) << 8;
+  Limit = Limit + EEPROM.read (PSAddress + 3);
+  Resolution = EEPROM.read (PSAddress + 4);
+  RampDelay = EEPROM.read (PSAddress + 5);
+  RampResolution = EEPROM.read (PSAddress + 6);
+  TapTimeout = EEPROM.read (PSAddress + 7) << 8;
+  TapTimeout = TapTimeout + EEPROM.read (PSAddress + 8);
+  Flags = EEPROM.read (PSAddress + 9);
+  TwitchSuppressionDelay = EEPROM.read (PSAddress + 10);
 }
