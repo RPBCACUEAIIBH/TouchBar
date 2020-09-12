@@ -21,6 +21,7 @@ Update v2.0.0:
   (Because of this it's no longger compatible with sketches written using previous versions, which is why I made it v2.0. My appoligies if this breaks your program, you can roll back to previous version using git tag.)
 - Kept the option to save settings/loading to/from EEPROM functionality, but I put it in 2 functions outside the classes.
   (It's totally optional now in case you want to do it your own way. Without this option it compiles to a bit smaller size and loading settings is also far faster. Credits to excsniper for the recommendation.)
+- Added documentation
 
 
 Update v1.1.0:
