@@ -21,7 +21,10 @@ Skill requirements:
 - You either need to make a PCB or order one! (The touch bar itself is basically a footprint you have to print on a PCB, it's a custom design, you can't really buy it.)
 
 
-If you find this useful, please consider donationg: http://osrc.rip/Support.html
+Note:
+- If you wonder what the touch bar should look like, there's a Ki-CAD folder included in the library, containing sybmols and footprints you can use to print one on a PCB.
+- If you find this useful, please consider donationg: http://osrc.rip/Support.html
+- If you wanna make the most out of this library please read the documentatuon!
 */
 
 #include <Adafruit_MPR121.h>
@@ -32,17 +35,26 @@ Adafruit_MPR121 TouchModule = Adafruit_MPR121();
 int CTouched = 0;
 int PTouched;
 
-// Touch Bar Object
-TouchBar TB(0); // It takes an EEPROM address (Uses 12 bytes of EEPROM starting from this address, so in this case the first 12 bytes of EEPROM will be used.)
-/* 
-Note:
-- You can have up to 4 touch bars with the same MPR121 module since a touch bar requires only 3 touch inputs, and it has 12.
-- 2 or more instances can share the same 12 bytes of EEPROM provided that the same initial settings are fine for each.
+// TouchBar objects
+// The Common object applies to every TouchBar object. These are tuning options, and should be left untouched unless your arduino runs on other then 16MHz, or your program is so long, it's getting slow...
+TouchBarCommon Common = {140, 20}; // unsigned int TapTimeout, byte TwitchSuppressionDelay
+/*
+  Note:
+  - TapTimeout - may not be obvious, if you rest your finger on the touch bar, but you change your mind and don't wanna ajust it, any you're only touching 1 of the pads, it may interpret it as a tap,
+    which could lead to trouble when snap functionality is enabled. TapTimeout is designed to prevent that. (It works, but not exactly foolproof, if you go crazy on the touchbar it may snap every
+    once in a while. For critical application where an accidental tap may lead to serious consequences, I'd recommend only enabling snap functionality in the special mode when the function pad is held!)
+  - TwitchSuppressionDelay - Selective debouncing, which suppresses oscillation on a pad, but passes change of state on any other pad then the last active.
+  - Both values refer to cycles of execution, not milliseconds or microseconds, thus frequency and long loops in your program may affect it!
 */
 
-// Variables used for this example sketch.
-unsigned int PreviousTarget;
+// Any of the config objects are modes of operation for the TouchBar objects, and can be used by one or more TouchBar objects at once.
+TouchBarConfig Config[2];
 
+TouchBar TB (&Common, &Config[0]); // It takes: TouchBarCommon *CommonPtr, TouchBarConfig *ConfigPtr
+
+// Variables
+boolean PreviousFunctionState = false;
+unsigned int PreviousTarget;
 
 void setup ()
 {
@@ -55,74 +67,103 @@ void setup ()
     while (1);
   }
 
-  // Write presets to EEPROM (Optional, only required once.)
-  TB.SetDefault (5000, true); // It takes: unsigned int NewDefault, boolean SaveToEEPROM(optional)
-  TB.SetLimit (10000, true); //It takes: unsigned int NewLimit, boolean SaveToEEPROM(optional)
-  TB.SetResolution (100, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
-  TB.SetRampDelay (10, true); // It takes: byte NewRampDelay, boolean SaveToEEPROM(optional)
-  TB.SetRampResolution (25, true); // It takes: byte NewResolution, boolean SaveToEEPROM(optional)
-  TB.SetTapTimeout (200, true); // It takes: unsigned int NewTapTimeout, boolean SaveToEEPROM(optional); ~200 value should be good, if your program is long or your arduino runs slower then 16MHz, you may need to reduce it. Again it's in Cycles, not in ms or us, so it changes with execution speed and long loops will affect it!
-  TB.SetTSDelay (40, true); // Takes byte TSDealy, boolean SaveToEEPROM(optional); 20-45 works fine with 16MHz arduino. The higher the number the better, however if it's too high it may miss a very fast tap. (Debounces oscillation of the same pad, but immediately passes trough change on any other pad then the previous one to allow for fast swipe. Without this sometimes it may falsely read a tap on a pad when placing or removing your finger on the touch bar.)
+  /* TouchBar */
+  // Config[0] - normal settings
+  Config[0].Default = 5000; // Valid range: 0 to Limit
+  Config[0].Limit = 10000; // Valid range: Limit > 3 && Limit < 65535 && Limit > Resolution && Limit > RampResolution
+  Config[0].Resolution = 100; // Valid range: Resolution > 0 && Resolution < Limit
+  Config[0].RampDelay = 100; // This depends on execution speed as well. It's defined in cycles of executon not ms or us... Valid range: 0 to 255
+  Config[0].RampResolution = 25; // Valid range: RampResolution > 0 && RampResolution < Limit
   // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
-  TB.SetFlags (false, true, false, false, true); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
-  //TB.SetFlags (true, false, true); // it takes: boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM(optional)
-  /*
-  Note:
-  - You don't need to save to EEPROM every time. The EEPROM is for preserving settings when it's turned off.
-  - Writing EEPROM is relatively slow, and it has a limited number of writes.
-  - The TouchBar library is using EEPROM.update() rather then EEPROM.write() to avoid excessive writes, so it's safe to leave the above code in the sketch.
-  - You can either have limited range, and fancy features, or unlimited range, and no fancy features...
-  - Snap does nothing when springback is also enabled.
-  - TapTimeout may not be obvious, but it is implemented to avoid sensing it as a tap if you rest your finger on the touch bar, but you change your mind and don't wanna ajust it.
+  Config[0].SetFlags(false, true, false, false); // It takes: SpringBackFlag, SnapFlag, RampFlag, FlipFlag; SpringBack overrides Snap and thus don't work together, every other combination should be fine.
+  //Config[0].SetFlags (true, false); // it takes: RollOverFlag, FlipFlag; RollOver doesn't work with anything but flip, even worse with Ramp on it suddenly changes direction when you pass the limit...
 
-  Play with the presets first, and find out what they do.
+  // Config[1] - special settings(active when the function pad is held)
+  Config[1].Default = 5000; // Valid range: 0 to Limit
+  Config[1].Limit = 10000; // Valid range: Limit > 3 && Limit < 65535 && Limit > Resolution && Limit > RampResolution
+  Config[1].Resolution = 350; // Valid range: Resolution > 0 && Resolution < Limit
+  Config[1].RampDelay = 100; // This depends on execution speed as well. It's defined in cycles of executon not ms or us... Valid range: 0 to 255
+  Config[1].RampResolution = 25; // Valid range: RampResolution > 0 && RampResolution < Limit
+  // Use only one of the following 2 lines! It is an overloaded method, one of them should be commented!
+  Config[1].SetFlags(false, true, true, false); // It takes: boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag
+  //Config[1].SetFlags (true, false); // it takes: boolean RollOverFlag, boolean FlipFlag
+  /*
+    Note:
+    - You can either have limited range, and fancy features, or unlimited range, and no fancy features...
+    - Snap does nothing when springback is also enabled.
+
+    Play with the presets first, and find out what they do.
   */
 
-  // Second initialize the Touch Bar library (load presets form EEPROM)
-  TB.Init (); // Init() loads settings from EEPROM, but you can set everthing directly if you want instead of calling Init() just as you would write presets to EEPROM with the above section, except without specifying the "SaveToEEPROM" value at the end. (It defaults to false.)
+  // Initialization
+  TB.SetPosition(Config[0].Default); // This sets target to default. If you don't call this it's gonna start at 0 regardless. I could make an Init() method for this, but it's already a 1 liner anyway.
+  // Calling TB.Reset() to initialize it also works, but if Ramp flag is set, then it sets Target rather then Position, and ramps up to default(which can be used to soft start something).
 
-  // Report after init...
+  // This is an easy way to save/load the settings to/from EEPROM (Optional, in v2.0 and newer it's no longger built into the touchbar class.)
+  // Both take: TouchBarCommon*(pointer to Common object), TouchBarConfig(the entire Config object array), sizeof(Config)/sizeof(Config[0]), EEPROMAddress
+  // Requires: sizeof(Common) + sizeof(Config) bytes of EEPROM
+  // Without the use of EEPROM, it compiles to 550 bytes less.
+  //SaveTouchBarConfig (&Common, Config, sizeof(Config)/sizeof(Config[0]), 0); // Can be left uncommented, it uses EEPROM.update()
+  //LoadTouchBarConfig (&Common, Config, sizeof(Config)/sizeof(Config[0]), 0);
+
+  // Report (without this report it compiles to 564 bytes less)
   Serial.print (F("Reporting Touch Bar status:"));
-  Serial.print (F("\n  Default = "));
-  Serial.print (TB.GetDefault());
-  Serial.print (F("\n  Limit = "));
-  Serial.print (TB.GetLimit ());
-  Serial.print (F("\n  Resolution = "));
-  Serial.print (TB.GetResolution ());
-  Serial.print (F("\n  RampDelay = "));
-  Serial.print (TB.GetRampDelay ());
-  Serial.print (F("\n  RampResolution = "));
-  Serial.print (TB.GetRampResolution ());
   Serial.print (F("\n  TapTimeout = "));
-  Serial.print (TB.GetTapTimeout ());
+  Serial.print (Common.TapTimeout);
   Serial.print (F("\n  TSDelay = "));
-  Serial.print (TB.GetTSDelay ());
+  Serial.print (Common.TwitchSuppressionDelay);
+  Serial.println ();
+  Serial.print (F("\n  Default = "));
+  Serial.print (Config[0].Default);
+  Serial.print (F("\n  Limit = "));
+  Serial.print (Config[0].Limit);
+  Serial.print (F("\n  Resolution = "));
+  Serial.print (Config[0].Resolution);
+  Serial.print (F("\n  RampDelay = "));
+  Serial.print (Config[0].RampDelay);
+  Serial.print (F("\n  RampResolution = "));
+  Serial.print (Config[0].RampResolution);
   Serial.print (F("\n  RollOverFlag = "));
-  Serial.print (TB.GetRollOverFlag ());
+  Serial.print (Config[0].GetRollOverFlag ());
   Serial.print (F("\n  SpringBackFlag = "));
-  Serial.print (TB.GetSpringBackFlag ());
+  Serial.print (Config[0].GetSpringBackFlag ());
   Serial.print (F("\n  SnapFlag = "));
-  Serial.print (TB.GetSnapFlag ());
+  Serial.print (Config[0].GetSnapFlag ());
   Serial.print (F("\n  RampFlag = "));
-  Serial.print (TB.GetRampFlag ());
+  Serial.print (Config[0].GetRampFlag ());
   Serial.print (F("\n  FlipFlag = "));
-  Serial.print (TB.GetFlipFlag ());
+  Serial.print (Config[0].GetFlipFlag ());
   Serial.println ();
   Serial.println ();
-  
+
   Serial.println(F("Initialization done!"));
 }
 
 void loop ()
 {
   PreviousTarget = TB.GetTargetInt();
-  // Read pads and feed it to Touch Bar lib.
-  TB.Update (TouchModule.touched()); // Takes byte but only uses first 3 bits [0-2]
-  /*
-  // You can also do something like this giving it 3 boolean values instead of a byte, however it uses 30 bytes more program space... (Don't forget to comment the line above if you uncomment the following 2 lines!)
-  unsigned int X = TouchModule.touched();
-  TB.Update (bitRead(X, 0), bitRead(X, 1), bitRead(X, 2));
-  */
+  // Read pads
+  byte AllPads = TouchModule.touched(); // The adafruit library actually returns a 12 bit value, but the TouchBar only uses the first 3 bits, and the 4th is the function pad.
+  /* Function Pad */
+  boolean X = bitRead (AllPads, 3); // Extract function pad state
+  if (X == HIGH && PreviousFunctionState == LOW)
+  {
+    Serial.println (F("The Function pad got touched!"));
+    // This should temporarily enable ramp mode, as long as you hold the function pad. (This presents 2 new features. SetTaget() and Restore())
+    TB.Reconfigure (&Config[1]);
+  }
+  if (X == LOW && PreviousFunctionState == HIGH)
+  {
+    Serial.println (F("The Function pad got released!"));
+    // Restore previous settings from EEPROM without reseting current position and target.
+    TB.Reconfigure (&Config[0]);
+  }
+  PreviousFunctionState = X;
+
+  /* TouchBar */
+  PreviousTarget = TB.GetTargetInt();
+  // Feed the pads to TouchBar.
+  TB.Update (AllPads); // Takes a byte, and uses the first 3 bits
 
   // Get tap.
   if (TB.PadEvent() != 'Z')
@@ -132,15 +173,15 @@ void loop ()
     Serial.println (F(" pad."));
   }
 
-  // Get position.
+  // Get target and position.
+  if (TB.GetTargetInt () != PreviousTarget)
+  {
+    Serial.print (F("Target set to "));
+    Serial.print (TB.GetTargetFloat()); // Displaying target position in percentage.
+    Serial.println (F("%"));
+  }
   if (TB.Event() == true)
   {
-    if (TB.GetTargetInt () != PreviousTarget)
-    {
-      Serial.print (F("Target set to "));
-      Serial.print (TB.GetTargetFloat()); // Displaying target position in percentage.
-      Serial.println (F("%"));
-    }
     Serial.print (F("CPos: "));
     Serial.print (TB.GetPositionFloat()); // Displaying current position in percentage.
     Serial.println (F("%"));

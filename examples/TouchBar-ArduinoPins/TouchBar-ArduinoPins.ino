@@ -1,5 +1,5 @@
 /*
-The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of my TouchLib library or the Adafruit_MPR121 library.) and interpret it as a touch bar.
+The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of my TouchLib library or the Adafruit_MPR121 library) and interpret it as a touch bar.
 
 
 Hardware requirements:
@@ -17,9 +17,11 @@ Skill requirements:
 - You need to have basic arduino skills. (Understanding how to interface 5V and 3.3V modules, hooking up and testing an i2c device with level shifter, soldering, understanding arduino code, installing and using libraries, etc. This is a library of source code and CAD files with an example sketch not a tutorial, so I won't explain everything here.)
 - You either need to make a PCB or order one! (The touch bar itself is basically a footprint you have to print on a PCB, it's a custom design, you can't really buy it.)
 
-Note: If you wonder what the touch bar should look like, there's a Ki-CAD folder included in the library, containing sybmols and footprints you can use to print one on a PCB.
 
-If you find this useful, please consider donationg: http://osrc.rip/Support.html
+Note:
+- If you wonder what the touch bar should look like, there's a Ki-CAD folder included in the library, containing sybmols and footprints you can use to print one on a PCB.
+- If you find this useful, please consider donationg: http://osrc.rip/Support.html
+- If you wanna make the most out of this library please read the documentatuon!
 */
 
 #include <TouchLib.h>
@@ -30,10 +32,11 @@ DigitalTouch TInA(A0);
 DigitalTouch TInB(A1);
 DigitalTouch TInC(A2);
 DigitalTouch TInF(A3);
+// This works with digital pins, I just had the A0-A4 conveniently beside the VCC on the Pro-Mini and they are analog pis which means they also work with AnalogTouch but DigitalTouch is faster. :)
 
 // TouchBar objects
 // The Common object applies to every TouchBar object. These are tuning options, and should be left untouched unless your arduino runs on other then 16MHz, or your program is so long, it's getting slow...
-TouchBarCommon Common = {300, 60}; // unsigned int TapTimeout, byte TwitchSuppressionDelay
+TouchBarCommon Common = {320, 60}; // unsigned int TapTimeout, byte TwitchSuppressionDelay
 /*
   Note:
   - TapTimeout - may not be obvious, if you rest your finger on the touch bar, but you change your mind and don't wanna ajust it, any you're only touching 1 of the pads, it may interpret it as a tap,
@@ -44,7 +47,7 @@ TouchBarCommon Common = {300, 60}; // unsigned int TapTimeout, byte TwitchSuppre
 */
 
 // Any of the config objects are modes of operation for the TouchBar objects, and can be used by one or more TouchBar objects at once.
-TouchBarConfig Config[5];
+TouchBarConfig Config[2];
 
 TouchBar TB (&Common, &Config[0]); // It takes: TouchBarCommon *CommonPtr, TouchBarConfig *ConfigPtr
 
@@ -59,7 +62,9 @@ void setup()
   /* TouchLib */
   // These are set for 16MHz arduinos, you may need to tweak them for different frequency.
   // TInA.SetCalibLimit (); // Calibration will fail if this value is exceeded. It takes: byte NewLimit; Digital Default: 7;
-  // TInA.SetThreshold (); // This determines the sensitivity; It takes: byte NewThreshold; Default: 3; Valid: >= 3;
+  //TInA.SetThreshold (); // This determines the sensitivity; It takes: byte NewThreshold; Default: 3; Valid: >= 3;
+  TInF.SetThreshold (7); // You want pads A,B and C to be very sensitive(as they are by default), and let TwitchSuppression of the TouchBar library handle oscillation, however the function pad is separate and should be less sensitive, with more hysteresis, which is what this line does.
+
   while (TInA.Calibrate())
     Serial.println (F("Calibration for Touch Input A failed! Retrying..."));
   while (TInB.Calibrate())
@@ -96,6 +101,10 @@ void setup()
 
     Play with the presets first, and find out what they do.
   */
+
+  // Initialization
+  TB.SetPosition(Config[0].Default); // This sets target to default. If you don't call this it's gonna start at 0 regardless. I could make an Init() method for this, but it's already a 1 liner anyway.
+  // Calling TB.Reset() to initialize it also works, but if Ramp flag is set, then it sets Target rather then Position, and ramps up to default(which can be used to soft start something).
 
   // This is an easy way to save/load the settings to/from EEPROM (Optional, in v2.0 and newer it's no longger built into the touchbar class.)
   // Both take: TouchBarCommon*(pointer to Common object), TouchBarConfig(the entire Config object array), sizeof(Config)/sizeof(Config[0]), EEPROMAddress
@@ -139,7 +148,7 @@ void setup()
 
 void loop()
 {
-  /* ToucLib */
+  /* Function Pad */
   boolean X = TInF.ReadState();
   if (X == HIGH && PreviousFunctionState == LOW)
   {

@@ -6,6 +6,7 @@ Include the TouchBar library like so:
 ### Common Object ###
 Declaration should be like so(and only 1 should be declared, and shared by all the TouchBar objects):
 TouchBarCommon CommonObject = {300, 60}; <<< The order in which the variables are given is: TapTimeout, TwitchSuppressionDelay
+
 // Variables and Methods you can use
 TapTimeout <<< Valid range: TapTimeout > 0; This controls how fast a tap should be to avoid sensing as a tap when you change your mind, about adjustment but you already put your finger on the bar. The value should be just high enough so it doesn't misses the tap when you're actially tapping, but low enough to avoid acciendtal taps when you put your finger on the bar, and take it away.
 TwitchSuppressionDelay <<< Valid range: 0 - 255; This is a form of advanced parallel debouncing to avoid double reads, but allow fast swipe. It suppresses fast change on the last active pad, but passes change immediately on any other pad. You want this to be high enough so that it doesn't accidentally read oscillation as tap, when you barely touching the pad, but as low as possible cause this adds some input lag for tapping(not for swiping).
@@ -67,3 +68,39 @@ It will use sizeof(CommonObject) + sizeof(ConfigObject) bytes of EEPROM incremen
 (It uses EEPROM.update(), so safe to leave it uncommented.)
 SaveTouchBarConfig (&CommonObject, ConfigObject, sizeof(ConfigObject)/sizeof(ConfigObject[0]), EEPROMAddress);
 LoadTouchBarConfig (&CommonObject, ConfigObject, sizeof(ConfigObject)/sizeof(ConfigObject[0]), EEPROMAddress);
+
+
+
+### Fine tuning ###
+Generally you wanna satart with loose values, with room to adjust. Start with the following values:
+TouchBarCommon CommonObject = {500, 1}; // Make the first value 1000 or even higher for an 8Mhz arduino...
+
+ConfigObject[0].Default = 5000;
+ConfigObject[0].Limit = 10000;
+ConfigObject[0].Resolution = 100;
+ConfigObject[0].RampDelay = 100;
+ConfigObject[0].RampResolution = 25;
+ConfigObject[0].SetFlags(false, true, false, false);
+
+You may need get away with using the values from an example sketch, but if you really want your program to work well, or your arduino works on other then 16MHz, you may want to do this twice. Before and after you finished your program.
+(If you're using my TouchLib library as well, you may want to tune that first to get the sensitivity of the touch pads just right, and tune the the TouchBar, when you know the pads work as they supposed to.
+Generally you want the Pads A,B and C as sensitive as possible(as it is by default), but any individual pads like the function pad less sensitive.)
+
+- First: Start raising the TwitchSuppression delay (CommonObject second value) and raise it until it doesn't misses a fast tap, but you don't get any bursts of a single pad being touched, released, touched release, (...) when you're draging your finger on the bar, barely touching it.
+
+- Second: Lower the TapTimeout (first value of the CommonObject) until you don't get taps* as you lightly drag your finger on the bar.
+(* It can be tweaked fairly well, but it's never gonna be perfect, if you go crazy on the pads you still gonna get occasinal false taps, since it uses the same pads!
+This library is meant to use the fewest number of touch inputs possible that allows for low latency, and easy done at hone by an experienced DIY-er, which is 3 pads.
+If you want perfect you have the following options:
+1. You use the function pad to change mode and thus enable snap functionality while holding the funcion pad.
+2. You will need to print a bar without the 3 snap pads, make your own snap pads that you connect to 3 other pins, disabling the builtin snap functionality and implement your own by manipulating the position and/or target variables of the TouchBar object. This sacrifices 3 additional input pins for the convenience of not having to hold the function pad while haveing reliable snap functionality.
+Both of that are outside the scope of this library...)
+
+- Last: you want to tweak these 3 config values
+ConfigObject[0].Resolution = 100;
+ConfigObject[0].RampDelay = 100;
+ConfigObject[0].RampResolution = 25;
+The Default, Limit, and Flags are entirely up to you, they should not need tweaking...
+  - Resolution - A touch bar has the resolution of number of stripes * 2 - 2. If you want to be able to adjust the position/target by a single full swipe, you want to set the resolution to Limit / (number of stipes * 2 - 2). Other then that set it higher for coarser adjustment, or lower for finer.
+  - RampDelay - It is influenced by frequency and the lenghth of your program, since it works by counting execution cycles(increments every time you call the TouchBarObject.Update() method till it reaches the set delay, then it resets the counter, and increments/decrements position by RampResolution)
+  - RampResolution - It does the same as resolution, but it refers to automatic adjustment, when Target != Position. When Ramp flag is set, you can manually adjust the Target, the position will follow gradually it's speed depending on the RampDelay(the lower the faster), and it's resolution on RampResolution. The idea is that you set the resolution to coarse, and RampResolution to a fine, and you can set the Target from 0 to 10000 with a single swipe, whit no sudden change in Position. (You can also check the Config[0] vs Config[1] settings in the TouchBar-ArduinoPins example to see how it meant to work.)
