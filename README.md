@@ -15,6 +15,14 @@ Features:
 - Settings requre 12 bytes of EEPROM.
 - It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one. (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
 
+
+Update v2.0.0:
+- Mostly rewrote it for more flexibility extracting the settings to 2 new classes, which can be used by more then one TouchBar objects, thus saving memory, and making mode changes really simple.
+  (Because of this it's no longger compatible with sketches written using previous versions, which is why I made it v2.0. My appoligies if this breaks your program, you can roll back to previous version using git tag.)
+- Kept the option to save settings/loading to/from EEPROM functionality, but I put it in 2 functions outside the classes.
+  (It's totally optional now in case you want to do it your own way. Without this option it compiles to a bit smaller size and loading settings is also far faster. Credits to excsniper for the recommendation.)
+
+
 Update v1.1.0:
 - Optimized it for use with my new TouchLib library. (Highly recommend it cause it's more compact, more responsive, and more stable. :D Example sketch included demoing the new features as well.)
 - Added SetTarget() and Restore() methods.

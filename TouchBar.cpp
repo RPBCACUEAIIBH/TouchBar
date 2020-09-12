@@ -1,123 +1,32 @@
 #include "TouchBar.h"
-#include <EEPROM.h>
 
 
 
 /* General */
-
-TouchBar::TouchBar (unsigned int EEPROMAddress)
+TouchBar::TouchBar (TouchBarCommon *CommonPtr, TouchBarConfig *ConfigPtr)
 {
-   PSAddress = EEPROMAddress;
+  Common = CommonPtr;
+  Config = ConfigPtr;
+  Current = Config->Default;
+  Previous = Config->Default;
+  Target = Config->Default;
 }
 
-void TouchBar::Init ()
+void TouchBar::Reconfigure (TouchBarConfig *ConfigPtr)
 {
-  Restore ();
-  Current = Default;
-  Previous = Default;
-  Target = Default;
+  Config = ConfigPtr;
+  Target = Current;
 }
-
-
 
 
 
 /* Settings */
 void TouchBar::Reset ()
 {
-  if (bitRead (Flags, 4) == true)
-    Target = Default;
+  if (Config->GetRampFlag() == true)
+    Target = Config->Default;
   else
-    Current = Default;
-}
-
-void TouchBar::SetDefault (unsigned int NewDefault, boolean SaveToEEPROM)
-{
-  Default = NewDefault;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 1, NewDefault);
-    EEPROM.update (PSAddress, NewDefault >> 8);
-  }
-}
-
-void TouchBar::SetLimit (unsigned int NewLimit, boolean SaveToEEPROM)
-{
-  Limit = NewLimit;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 3, NewLimit);
-    EEPROM.update (PSAddress + 2, NewLimit >> 8);
-  }
-}
-
-void TouchBar::SetResolution (byte NewResolution, boolean SaveToEEPROM)
-{
-  Resolution = NewResolution;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 4, NewResolution);
-  }
-}
-
-void TouchBar::SetRampDelay (byte NewRampDelay, boolean SaveToEEPROM)
-{
-  RampDelay = NewRampDelay;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 5, NewRampDelay);
-  }
-}
-
-void TouchBar::SetRampResolution (byte NewRampResolution, boolean SaveToEEPROM)
-{
-  RampResolution = NewRampResolution;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 6, NewRampResolution);
-  }
-}
-
-void TouchBar::SetTapTimeout (unsigned int NewTapTimeout, boolean SaveToEEPROM)
-{
-  TapTimeout = NewTapTimeout;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 8, NewTapTimeout);
-    EEPROM.update (PSAddress + 7, NewTapTimeout >> 8);
-    //EEPROM.update (PSAddress + 7, NewTapTimeout);
-  }
-}
-
-void TouchBar::SetTSDelay (byte TSDelay, boolean SaveToEEPROM)
-{
-  TwitchSuppressionDelay = TSDelay;
-  if (SaveToEEPROM == true)
-  {
-    EEPROM.update (PSAddress + 10, TSDelay);
-  }
-}
-
-void TouchBar::SetFlags (boolean SpringBackFlag, boolean SnapFlag, boolean RampFlag, boolean FlipFlag, boolean SaveToEEPROM)
-{
-  Flags = 0;
-  bitWrite(Flags, 6, SpringBackFlag);
-  bitWrite(Flags, 5, SnapFlag);
-  bitWrite(Flags, 4, RampFlag);
-  bitWrite(Flags, 3, FlipFlag);
-  // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
-  if (SaveToEEPROM == true)
-    EEPROM.update (PSAddress + 9, Flags);
-}
-
-void TouchBar::SetFlags (boolean RollOverFlag, boolean FlipFlag, boolean SaveToEEPROM)
-{
-  Flags = 0;
-  bitWrite(Flags, 7, RollOverFlag);
-  bitWrite(Flags, 3, FlipFlag);
-  // Bits 7-4 are used the rest of the bits Reserved for additional flags that may be added...
-  if (SaveToEEPROM == true)
-    EEPROM.update (PSAddress + 9, Flags);
+    Current = Config->Default;
 }
 
 void TouchBar::SetPosition (unsigned int NewPosition)
@@ -132,70 +41,7 @@ void TouchBar::SetTarget (unsigned int NewTarget)
 
 
 
-/* Get Settings */
-
-unsigned int TouchBar::GetDefault ()
-{
-  return Default;
-}
-
-unsigned int TouchBar::GetLimit ()
-{
-  return Limit;
-}
-byte TouchBar::GetResolution ()
-{
-  return Resolution;
-}
-
-byte TouchBar::GetRampDelay ()
-{
-  return RampDelay;
-}
-
-byte TouchBar::GetRampResolution ()
-{
-  return RampResolution;
-}
-
-unsigned int TouchBar::GetTapTimeout ()
-{
-  return TapTimeout;
-}
-
-byte TouchBar::GetTSDelay ()
-{
-  return TwitchSuppressionDelay;
-}
-
-boolean TouchBar::GetRollOverFlag ()
-{
-  return bitRead (Flags, 7);
-}
-
-boolean TouchBar::GetSpringBackFlag ()
-{
-  return bitRead (Flags, 6);
-}
-
-boolean TouchBar::GetSnapFlag ()
-{
-  return bitRead (Flags, 5);
-}
-
-boolean TouchBar::GetRampFlag ()
-{
-  return bitRead (Flags, 4);
-}
-
-boolean TouchBar::GetFlipFlag ()
-{
-  return bitRead (Flags, 3);
-}
-
-
 /* Input / Output */
-
 void TouchBar::Update (byte NewValue) // This compiles to 30 bytes less then the other Update method.
 {
   Shift ();
@@ -211,7 +57,6 @@ void TouchBar::Update (boolean A, boolean B, boolean C)
   Shift ();
   
   byte X = 0;
-  //X = (C << 2) + (B << 1) + A; // This looks better
   
   // This does the same, but uses 2 bytes less flash... (I tried like 4 ways of doing this, this is the most compact when compiled, that's 2 instructions less to execute each cycle.)
   X = C;
@@ -219,6 +64,8 @@ void TouchBar::Update (boolean A, boolean B, boolean C)
   X = X + B;
   X = X << 1;
   X = X + A;
+
+  //X = (C << 2) + (B << 1) + A; // This looks better and does the same but for some reason not as compact then compiled.
   
   TwitchSuppression (X);
   
@@ -242,7 +89,7 @@ void TouchBar::TwitchSuppression (byte NewValue)
   if (NewValue != Raw)
     TSCounter = 0;
   
-  if (NewValue != ABCPads && NewValue != 0 && ABCPads != 0 || NewValue ^ ABCPads && TSCounter == TwitchSuppressionDelay)
+  if (NewValue != ABCPads && NewValue != 0 && ABCPads != 0 || NewValue ^ ABCPads && TSCounter == Common->TwitchSuppressionDelay)
     ABCPads = NewValue; // This does the same, compiles to the same size
 
   Raw = NewValue;
@@ -258,7 +105,7 @@ boolean TouchBar::Event ()
 
 char TouchBar::PadEvent ()
 {
-  if (TapCounter < TapTimeout && ABCPads == 0 && ABCPrevious[0] != 0)
+  if (TapCounter < Common->TapTimeout && ABCPads == 0 && ABCPrevious[0] != 0)
     switch (ABCPrevious[0])
     {
       case 1: return 'A';
@@ -296,14 +143,11 @@ float TouchBar::GetTargetFloat ()
 
 
 
-
-
 /* Execution */
-
 void TouchBar::Main ()
 {
   // Swap bits 0 and 2 if necessary
-  if (bitRead (Flags, 3) == true)
+  if (Config->GetFlipFlag() == true)
   {
     boolean X = bitRead(ABCPads, 0);
     bitWrite(ABCPads, 0, bitRead(ABCPads, 2));
@@ -316,25 +160,25 @@ void TouchBar::Main ()
   else if (ABCPads == 0 && ABCPrevious[0] == 0)
     TapCounter = 0;
   else
-    TapCounter = TapTimeout;
+    TapCounter = Common->TapTimeout;
 
   Previous = Current; // This must be before the snap, otherwise snapping works, but does not report the event.
 
   // Snap
-  if (bitRead (Flags, 5) == true && PadEvent() != 'Z')
+  if (Config->GetSnapFlag() == true && PadEvent() != 'Z')
     switch (PadEvent())
     {
-      case 'A': if (bitRead (Flags, 4) == true)
+      case 'A': if (Config->GetRampFlag() == true)
                   Target = 0;
                 else
                   Current = 0;
       break;;
       case 'B': Reset();
       break;;
-      case 'C': if (bitRead (Flags, 4) == true)
-                  Target = Limit;
+      case 'C': if (Config->GetRampFlag() == true)
+                  Target = Config->Limit;
                 else
-                  Current = Limit;
+                  Current = Config->Limit;
       break;;
     }
   
@@ -349,7 +193,7 @@ void TouchBar::GetDirection ()
     Direction = Static;
     ABCPrevious[1] = 0;
     ABCPrevious[2] = 0;
-    if (bitRead (Flags, 6) == true)
+    if (Config->GetSpringBackFlag() == true)
       Reset ();
   }
   else
@@ -577,133 +421,105 @@ void TouchBar::GetDirection ()
 
 void TouchBar::AdjustOutput ()
 {
-  if (bitRead (Flags, 4) == true)
+  if (Config->GetRampFlag() == true)
   {
     if (Direction > Static)
     {
-      if (Target < Limit - Resolution && Direction == Increment)
-        Target += Resolution;
+      if (Target < Config->Limit - Config->Resolution && Direction == Increment)
+        Target += Config->Resolution;
       else
       {
-        if (Target < Limit - Resolution && Direction == Increment2)
-          Target += Resolution * 2;
+        if (Target < Config->Limit - Config->Resolution && Direction == Increment2)
+          Target += Config->Resolution * 2;
         else
-          Target = Limit;
+          Target = Config->Limit;
       }
     }
     if (Direction < Static)
     {
-      if (Target >= Resolution && Direction == Decrement)
-        Target -= Resolution;
+      if (Target >= Config->Resolution && Direction == Decrement)
+        Target -= Config->Resolution;
       else
       {
-        if (Target >= Resolution && Direction == Decrement2)
-          Target -= Resolution * 2;
+        if (Target >= Config->Resolution && Direction == Decrement2)
+          Target -= Config->Resolution * 2;
         else
           Target = 0;
       }
     }
 
-    if (RampCounter == RampDelay - 1)
+    if (RampCounter == Config->RampDelay - 1)
     {
       if (Current < Target)
-        if (Current < Target - RampResolution)
-          Current += RampResolution;
+        if (Current < Target - Config->RampResolution)
+          Current += Config->RampResolution;
         else
           Current = Target;
 
       if (Current > Target)
-        if (Current > Target + RampResolution)
-          Current -= RampResolution;
+        if (Current > Target + Config->RampResolution)
+          Current -= Config->RampResolution;
         else
           Current = Target;
     }
 
     RampCounter += 1;
-    RampCounter %= RampDelay;
+    RampCounter %= Config->RampDelay;
   }
   else
   {
     if (Direction > Static)
     {
-      if (bitRead (Flags, 7) == true)
+      if (Config->GetRollOverFlag() == true)
       {
         if (Direction == Increment)
-          Current += Resolution;
+          Current += Config->Resolution;
         if (Direction == Increment2)
-          Current += Resolution * 2;
-        Current %= Limit;
+          Current += Config->Resolution * 2;
+        Current %= Config->Limit;
       }
       else
       {
-        if (Current < Limit - Resolution && Direction == Increment)
-          Current += Resolution;
+        if (Current < Config->Limit - Config->Resolution && Direction == Increment)
+          Current += Config->Resolution;
         else
         {
-          if (Current < Limit - Resolution * 2 && Direction == Increment2)
-            Current += Resolution * 2;
+          if (Current < Config->Limit - Config->Resolution * 2 && Direction == Increment2)
+            Current += Config->Resolution * 2;
           else
-            Current = Limit;
+            Current = Config->Limit;
         }
       }
     }
     if (Direction < Static)
     {
-      if (bitRead (Flags, 7) == true)
+      if (Config->GetRollOverFlag() == true)
       {
         byte X = 0;
         if (Direction == Decrement)
-          X = Resolution;
+          X = Config->Resolution;
         if (Direction == Decrement2)
-          X = Resolution * 2;
-        if (Current - X >= Limit)
+          X = Config->Resolution * 2;
+        if (Current - X >= Config->Limit)
         {
           X -= Current;
-          Current = Limit - X;
+          Current = Config->Limit - X;
         }
         else
           Current -= X;
       }
       else
       {
-        if (Current >= Resolution && Direction == Decrement)
-          Current -= Resolution;
+        if (Current >= Config->Resolution && Direction == Decrement)
+          Current -= Config->Resolution;
         else
         {
-          if (Current >= Resolution * 2 && Direction == Decrement2)
-            Current -= Resolution * 2;
+          if (Current >= Config->Resolution * 2 && Direction == Decrement2)
+            Current -= Config->Resolution * 2;
           else
             Current = 0;
         }
       }
     }
   }
-}
-
-void TouchBar::Restore ()
-{
-  /*
-  EEPROM allocation
-  Default position --> PSAddress to PSAddress + 1
-  Limit --> PSAddress + 2 to PSAddress + 3
-  Resolution --> PSAddress + 4
-  Ramp delay --> PSAddress + 5
-  Ramp resolution --> PSAddress + 6
-  Tap timeout --> PSAddress + 7 to PSAddress + 8
-  Flags --> PSAddress + 9
-  Twitch suppression delay --> PSAddress + 10
-  
-  (Reserved for updates --> PSAddress + 11 and Flag bits [0-2])
-  */
-  Default = EEPROM.read (PSAddress) << 8;
-  Default = Default + EEPROM.read (PSAddress + 1);
-  Limit = EEPROM.read (PSAddress + 2) << 8;
-  Limit = Limit + EEPROM.read (PSAddress + 3);
-  Resolution = EEPROM.read (PSAddress + 4);
-  RampDelay = EEPROM.read (PSAddress + 5);
-  RampResolution = EEPROM.read (PSAddress + 6);
-  TapTimeout = EEPROM.read (PSAddress + 7) << 8;
-  TapTimeout = TapTimeout + EEPROM.read (PSAddress + 8);
-  Flags = EEPROM.read (PSAddress + 9);
-  TwitchSuppressionDelay = EEPROM.read (PSAddress + 10);
 }

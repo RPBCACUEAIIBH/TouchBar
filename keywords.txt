@@ -1,33 +1,18 @@
 ### Constructor ###
 TouchBar	KEYWORD1
+TouchBarCommon	KEYWORD1
+TouchBarConfig	KEYWORD1
 
-### Control Methods ###
-SetDefault	KEYWORD2
-SetLimit	KEYWORD2
-SetResolution	KEYWORD2
-SetRampDelay	KEYWORD2
-SetRampResolution	KEYWORD2
-SetTapTimeout	KEYWORD2
-SetTSDelay	KEYWORD2
+### Config Methods ###
 SetFlags	KEYWORD2
-
-### Methods for Monitoring ###
-GetDefault	KEYWORD2
-GetLimit	KEYWORD2
-GetResolution	KEYWORD2
-GetRampDelay	KEYWORD2
-GetRampResolution	KEYWORD2
-GetTapTimeout	KEYWORD2
-GetTSDelay	KEYWORD2
 GetRollOverFlag	KEYWORD2
 GetSpringBackFlag	KEYWORD2
 GetSnapFlag	KEYWORD2
 GetRampFlag	KEYWORD2
 GetFlipFlag	KEYWORD2
 
-### Operation ###
-Init	KEYWORD2
-Restore	KEYWORD2
+### TouchBar Methods ###
+Reconfigure	KEYWORD2
 Update	KEYWORD2
 SetPosition	KEYWORD2
 SetTarget	KEYWORD2
@@ -38,3 +23,7 @@ GetPositionInt	KEYWORD2
 GetPositionFloat	KEYWORD2
 GetTargetInt	KEYWORD2
 GetTargetFloat	KEYWORD2
+
+### Saving/Loading option ###
+SaveTouchBarConfig	KEYWORD2
+LoadTouchBarConfig	KEYWORD2
