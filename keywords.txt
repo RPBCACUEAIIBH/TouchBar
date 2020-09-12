@@ -3,6 +3,17 @@ TouchBar	KEYWORD1
 TouchBarCommon	KEYWORD1
 TouchBarConfig	KEYWORD1
 
+### Common Variables ###
+TapTimeout	KEYWORD2
+TwitchSuppressionDelay	KEYWORD2
+
+### Config Variables ###
+Default	KEYWORD2
+Limit	KEYWORD2
+Resolution	KEYWORD2
+RampDelay	KEYWORD2
+RampResolution	KEYWORD2
+
 ### Config Methods ###
 SetFlags	KEYWORD2
 GetRollOverFlag	KEYWORD2
