@@ -1,5 +1,7 @@
 Include the TouchBar library like so:
 #include <TouchBar.h>
+For ESP8266 only if you need to save the settings using EEPROM library
+#include <EEPROM.h>
 
 
 
@@ -10,6 +12,12 @@ TouchBarCommon CommonObject = {300, 60}; <<< The order in which the variables ar
 // Variables and Methods you can use
 TapTimeout <<< Valid range: TapTimeout > 0; This controls how fast a tap should be to avoid sensing as a tap when you change your mind, about adjustment but you already put your finger on the bar. The value should be just high enough so it doesn't misses the tap when you're actially tapping, but low enough to avoid acciendtal taps when you put your finger on the bar, and take it away.
 TwitchSuppressionDelay <<< Valid range: 0 - 255; This is a form of advanced parallel debouncing to avoid double reads, but allow fast swipe. It suppresses fast change on the last active pad, but passes change immediately on any other pad. You want this to be high enough so that it doesn't accidentally read oscillation as tap, when you barely touching the pad, but as low as possible cause this adds some input lag for tapping(not for swiping).
+
+// For ESP 8266 without MPR121
+TouchBarCommon CommonObject = {800, 250}; // Note that if your ESP runs faster then 40MHz you need to reduce resistor value even lower then 330K cause TwitchSuppressionDelay only goes up to 255.
+
+// For both arduino and ESP 8266 with MPR121
+TouchBarCommon Common = {140, 20}; // Speed limited by I2C port bandwidth...
 
 
 
@@ -69,11 +77,14 @@ It will use sizeof(CommonObject) + sizeof(ConfigObject) bytes of EEPROM incremen
 SaveTouchBarConfig (&CommonObject, ConfigObject, sizeof(ConfigObject)/sizeof(ConfigObject[0]), EEPROMAddress);
 LoadTouchBarConfig (&CommonObject, ConfigObject, sizeof(ConfigObject)/sizeof(ConfigObject[0]), EEPROMAddress);
 
+// For ESP8266 (...cause it doesn't have EEPROM, it uses a portion of flash to save data.)
+EEPROM.begin(SizeOfEEPROMInBytes); // only once, in setup () before calling SaveTouchBarConfig () or LoadTouchBarConfig ()
+
 
 
 ### Fine tuning ###
 Generally you wanna satart with loose values, with room to adjust. Start with the following values:
-TouchBarCommon CommonObject = {500, 1}; // Make the first value 1000 or even higher for an 8Mhz arduino...
+TouchBarCommon CommonObject = {500, 1}; // Make the first value 1000 or even higher for an 8Mhz arduino... Make the first value over 2000 for ESP8266...
 
 ConfigObject[0].Default = 5000;
 ConfigObject[0].Limit = 10000;
@@ -82,7 +93,7 @@ ConfigObject[0].RampDelay = 100;
 ConfigObject[0].RampResolution = 25;
 ConfigObject[0].SetFlags(false, true, false, false);
 
-You may need get away with using the values from an example sketch, but if you really want your program to work well, or your arduino works on other then 16MHz, you may want to do this twice. Before and after you finished your program.
+You may get away with using the values from an example sketch, but if you really want your program to work well, or your arduino works on other then 16MHz, you may want to do this twice. Before and after you finished your program.
 (If you're using my TouchLib library as well, you may want to tune that first to get the sensitivity of the touch pads just right, and tune the the TouchBar, when you know the pads work as they supposed to.
 Generally you want the Pads A,B and C as sensitive as possible(as it is by default), but any individual pads like the function pad less sensitive.)
 

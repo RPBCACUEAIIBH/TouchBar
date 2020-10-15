@@ -41,9 +41,7 @@ boolean UpdateEEPROM (unsigned int Address, byte Data)
       CommitChanges += UpdateEEPROM (EEPROMAddress + 10 + i * sizeof(ConfigPtr[i]), Flags);
     }
     if (CommitChanges > 0)
-    {
       EEPROM.commit ();
-    }
   }
 
 #else

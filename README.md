@@ -16,6 +16,10 @@ Features:
 - It has twitch suppression which is a form of advanced parallel debouncing that suppresses fast oscillation of a pad, but immediately passes trough change on any other pad then the last one. (This is done to prevent false tap reading and thus snapping when barely touching the edge of a pad, such as placing/removing your finger from the touchbar, or swiping very lightly. False taps ware fairly common without this feature. Simple debouncing as it is commonly done for buttons would limit swipe speed...)
 
 
+Update v2.1.0:
+- Added support for ESP8266 micros, with it's own pins, and with MPR121 touch module.
+
+
 Update v2.0.0:
 - Mostly rewrote it for more flexibility extracting the settings to 2 new classes, which can be used by more then one TouchBar objects, thus saving memory, and making mode changes really simple.
   (Because of this it's no longger compatible with sketches written using previous versions, which is why I made it v2.0. My appoligies if this breaks your program, you can roll back to previous version using git tag.)
@@ -30,14 +34,15 @@ Update v1.1.0:
 
 
 Hardware requirements:
-- Arduino running at 16MHz (Any type should do. 16MHz is important cause delays are based on cycles of execution not ms / us, 8MHz will work but require different settings. Mine is pro-mini 5V, 16MHz version.)
-- 3.3V regulator if your arduino doesn't have 3.3V power on it, and level shifter. (Ignore this if your arduino somehow runs at 3.3V, 16MHz)
-- MPR 121 touch module hooked up to i2c via the level shifter(cause it's a 3.3V device)
-- Touch bar hooked up to 0,1 and 2 touch touch inputs of the MPR121 module according to the provided documentation.
+- Arduino running at 16MHz (Any type should do. 16MHz is important cause delays are based on cycles of execution not ms / us, 8MHz will work but require different settings. Mine is pro-mini 5V, 16MHz version.) or ESP8266 running at 80MHz
+- 3.3V regulator if your arduino doesn't have 3.3V power on it, and level shifter. (Ignore this if your arduino or ESP8266 has 3.3V onboard.)
+- MPR 121 touch module hooked up to i2c via the level shifter. (Ignore this for ESP8266 they also run at 3.3V.)
+- Touch bar hooked up to 0 to 3 touch touch inputs of the MPR121 module according to the provided documentation, A0-A3 pins of arduino or 12,13,14,16 pins of ESP8266.
 
 
 Software requirements:
 - Arduino IDE
+- ESP8266 software (Only if you're using ESP8266 microcontroller. Available in Tools/Boards/Board Manager)
 - KiCAD
 - [ToucLib](https://github.com/RPBCACUEAIIBH/TouchLib) (Also my library. This turns arduino pins into touch inputs, only requires a 1M pullup, no need for MPR121 module with this.)
 - or Adafruit_MPR121 library (or similar... not included, you need to install it separately!)
@@ -58,5 +63,9 @@ Instructions:
  - Download as .zip package, go to the Sketch/Include Library/Add .ZIP Library... in you Arduino IDE, select it, and click ok.
 2. Open the included example sketch to see how to use it.
 3. It includes a KiCAD library I made with few symbols and several footprints so you can make a proper touch bar on PCB.
+
+
+Note: The vias on the touch bar footprints are relatively large so that you can put LEDs beneath, and display it's position. Position display is not implemented yet and it's probably gonna be another library...
+
 
 [If you find this useful, please consider donationg.](http://osrc.rip/Support.html)

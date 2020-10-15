@@ -38,7 +38,7 @@ DigitalTouch TInF(16);
 
 // TouchBar objects
 // The Common object applies to every TouchBar object. These are tuning options, and should be left untouched unless your ESP8266 runs on other then 80MHz, or your program is so long, it's getting slow...
-TouchBarCommon Common = {800, 250}; // unsigned int TapTimeout, byte TwitchSuppressionDelay
+TouchBarCommon Common = {800, 250}; // unsigned int TapTimeout, byte TwitchSuppressionDelay 
 /*
   Note:
   - TapTimeout - may not be obvious, if you rest your finger on the touch bar, but you change your mind and don't wanna ajust it, any you're only touching 1 of the pads, it may interpret it as a tap,
@@ -46,6 +46,7 @@ TouchBarCommon Common = {800, 250}; // unsigned int TapTimeout, byte TwitchSuppr
     once in a while. For critical application where an accidental tap may lead to serious consequences, I'd recommend only enabling snap functionality in the special mode when the function pad is held!)
   - TwitchSuppressionDelay - Selective debouncing, which suppresses oscillation on a pad, but passes change of state on any other pad then the last active.
   - Both values refer to cycles of execution, not milliseconds or microseconds, thus frequency and long loops in your program may affect it!
+  - If your ESP runs faster then 40MHz you need to reduce resistor value even lower then 330K cause TwitchSuppressionDelay only goes up to 255.
 */
 
 // Any of the config objects are modes of operation for the TouchBar objects, and can be used by one or more TouchBar objects at once.
