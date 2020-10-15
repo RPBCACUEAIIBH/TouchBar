@@ -96,5 +96,6 @@ class TouchBar
 
 void SaveTouchBarConfig (TouchBarCommon *CommonPtr, TouchBarConfig *ConfigPtr, size_t Size, unsigned int EEPROMAddress);
 void LoadTouchBarConfig (TouchBarCommon *CommonPtr, TouchBarConfig *ConfigPtr, size_t Size, unsigned int EEPROMAddress);
+boolean UpdateEEPROM (unsigned int Address, byte Data); // For ESP8266 (EEPROM.update() gives an error.)
 
 #endif
