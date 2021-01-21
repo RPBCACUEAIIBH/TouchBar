@@ -1,3 +1,7 @@
+!!! Deprecated !!!
+This library is now part of a collective library containing all my current arduino libraries including new ones. This one will not be updated and will be deleted in some time...
+Available at: https://github.com/RPBCACUEAIIBH/HexaLib-Arduino
+
 The TouchBar library is an engine designed to take an input, of 3 bits (first 3 bits of a byte such as the output of the Adafruit_MPR121 library, or a port register) and interpret it as a touch bar.
 
 
